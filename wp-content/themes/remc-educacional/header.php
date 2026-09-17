@@ -42,11 +42,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 </header>
 
 <nav class="nav-main" role="navigation" aria-label="<?php esc_attr_e( 'Menu principal', 'remc-educacional' ); ?>">
-	<div class="container">
+	<div class="container nav-main__inner">
+		<button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu-principal">
+			<span class="menu-toggle__icon" aria-hidden="true">☰</span>
+			<span class="menu-toggle__text"><?php esc_html_e( 'Menu', 'remc-educacional' ); ?></span>
+		</button>
 		<?php
 		if ( has_nav_menu( 'main' ) ) {
 			wp_nav_menu( array(
 				'theme_location' => 'main',
+				'menu_id'        => 'menu-principal',
 				'menu_class'     => 'nav-menu',
 				'container'      => false,
 				'depth'          => 2,

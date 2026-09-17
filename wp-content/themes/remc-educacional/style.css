@@ -49,16 +49,25 @@ a:hover {
 	background-color: var(--remc-green);
 }
 
-.nav-main ul {
+.nav-main__inner {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.nav-main .nav-menu {
 	list-style: none;
 	margin: 0;
 	padding: 0;
 	display: flex;
 	flex-wrap: wrap;
+	align-items: center;
+	width: 100%;
 }
 
-.nav-main li {
+.nav-main .nav-menu > li {
 	margin: 0;
+	position: relative;
 }
 
 .nav-main a {
@@ -68,9 +77,61 @@ a:hover {
 	text-decoration: none;
 }
 
-.nav-main a:hover {
-	background-color: rgba(255,255,255,0.1);
+.nav-main a:hover,
+.nav-main a:focus {
+	background-color: rgba(255, 255, 255, 0.12);
 	text-decoration: none;
+}
+
+/* Grupo alinhado à direita (Tutoriais | Programa Educação) */
+.nav-main .remc-menu-right {
+	margin-left: auto;
+}
+
+/* Submenu (Observações ▾) */
+.nav-main .sub-menu {
+	display: none;
+	position: absolute;
+	left: 0;
+	top: 100%;
+	z-index: 20;
+	min-width: 13rem;
+	background-color: var(--remc-green);
+	box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+}
+
+.nav-main li.is-open > .sub-menu,
+.nav-main li:focus-within > .sub-menu {
+	display: block;
+}
+
+.nav-main .sub-menu a {
+	padding: 0.75rem 1rem;
+}
+
+.nav-main .menu-item-has-children > a::after {
+	content: " ▾";
+	font-size: 0.75em;
+}
+
+/* Botão do menu (telas pequenas) */
+.menu-toggle {
+	display: none;
+	align-items: center;
+	gap: 0.5rem;
+	background: transparent;
+	border: 1px solid rgba(255, 255, 255, 0.6);
+	color: #fff;
+	border-radius: 4px;
+	padding: 0.5rem 0.75rem;
+	margin: 0.5rem 0;
+	font-size: 1rem;
+	cursor: pointer;
+}
+
+.menu-toggle:focus {
+	outline: 2px solid #fff;
+	outline-offset: 2px;
 }
 
 /* Main Content */
@@ -240,13 +301,39 @@ th {
 }
 
 /* Responsive */
-@media (max-width: 768px) {
-	.nav-main ul {
-		flex-direction: column;
+@media (max-width: 782px) {
+	.menu-toggle {
+		display: inline-flex;
 	}
-	
-	.nav-main a {
-		padding: 0.75rem;
+
+	.nav-main .nav-menu {
+		display: none;
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.nav-main.is-open .nav-menu {
+		display: flex;
+	}
+
+	.nav-main .remc-menu-right {
+		margin-left: 0;
+	}
+
+	.nav-main .sub-menu {
+		position: static;
+		display: none;
+		box-shadow: none;
+		min-width: 0;
+	}
+
+	.nav-main li.is-open > .sub-menu {
+		display: block;
+	}
+
+	.nav-main .nav-menu a {
+		padding: 0.85rem 0.75rem;
+		border-top: 1px solid rgba(255, 255, 255, 0.15);
 	}
 }
 
@@ -259,6 +346,280 @@ th {
 .screen-reader-text {
 	clip: rect(1px, 1px, 1px, 1px);
 	position: absolute;
+}
+
+/* Carrossel de observações (Feed / Painel do Aluno) */
+.remc-carousel__viewport {
+	position: relative;
+}
+
+.remc-carousel .remc-slide {
+	display: none;
+}
+
+.remc-carousel .remc-slide.is-active {
+	display: block;
+}
+
+.remc-carousel__nav {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	margin-top: 1rem;
+	flex-wrap: wrap;
+}
+
+.remc-carousel__pos {
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.remc-carousel .remc-slide__title {
+	margin-top: 0;
+}
+
+.remc-slide__when {
+	color: #555;
+	margin: 0 0 0.75rem;
+}
+
+.remc-facts {
+	list-style: none;
+	margin: 0 0 1rem;
+	padding: 0;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	gap: 0.5rem 1rem;
+}
+
+.remc-facts__item {
+	display: flex;
+	gap: 0.4rem;
+	align-items: baseline;
+}
+
+.remc-facts__label {
+	font-weight: 600;
+}
+
+/* Estado de compartilhamento */
+.remc-status {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	font-weight: 600;
+	margin: 0 0 0.5rem;
+}
+
+.remc-status--shared {
+	color: #1c6b3f;
+}
+
+.remc-status--pending,
+.remc-status--empty {
+	color: #6c5700;
+}
+
+.remc-status__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.4rem;
+	height: 1.4rem;
+	border-radius: 50%;
+	background-color: rgba(0, 0, 0, 0.08);
+}
+
+.remc-status__actions {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin: 0;
+}
+
+/* Página inicial */
+.home-hero {
+	padding: 2rem 0 1rem;
+}
+
+.home-hero__eyebrow {
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	font-size: 0.8rem;
+	color: var(--remc-green);
+	font-weight: 700;
+	margin: 0 0 0.5rem;
+}
+
+.home-hero__title {
+	margin: 0 0 0.5rem;
+	line-height: 1.15;
+}
+
+.home-hero__tagline {
+	font-size: 1.25rem;
+	font-weight: 600;
+	color: var(--remc-green);
+	margin: 0 0 1rem;
+}
+
+.home-hero__text {
+	max-width: 62ch;
+}
+
+.home-hero__actions {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	margin-top: 1rem;
+}
+
+.home-how,
+.home-weather,
+.home-scientist,
+.home-program,
+.featured-content {
+	margin-top: 2.5rem;
+}
+
+.home-how__grid {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 1rem;
+}
+
+.home-how__item {
+	text-align: left;
+}
+
+.home-how__icon {
+	font-size: 1.75rem;
+	display: block;
+}
+
+.home-how__title {
+	margin: 0.5rem 0 0.25rem;
+}
+
+.home-how__text {
+	margin: 0;
+}
+
+.home-weather__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	flex-wrap: wrap;
+}
+
+.weather-card__main {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+}
+
+.weather-card__icon {
+	font-size: 3rem;
+	line-height: 1;
+}
+
+.weather-card__place {
+	font-weight: 700;
+	margin: 0;
+}
+
+.weather-card__temp {
+	font-size: 2.25rem;
+	font-weight: 700;
+	margin: 0;
+}
+
+.weather-card__label {
+	margin: 0;
+	color: #444;
+}
+
+.weather-card__facts {
+	list-style: none;
+	margin: 1rem 0 0;
+	padding: 0;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	gap: 0.35rem 1rem;
+}
+
+.weather-card__range {
+	font-weight: 600;
+	margin: 0.75rem 0 0;
+}
+
+.remc-forecast__list {
+	list-style: none;
+	margin: 0.5rem 0 0;
+	padding: 0;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+	gap: 0.75rem;
+}
+
+.remc-forecast__item {
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
+	padding: 0.75rem;
+	border: 1px solid #e2e6ea;
+	border-radius: 8px;
+	background-color: #fff;
+}
+
+.remc-forecast__day {
+	font-weight: 700;
+}
+
+.remc-forecast__temp {
+	font-size: 1.1rem;
+}
+
+.remc-forecast__rain {
+	color: #35618f;
+	font-size: 0.9rem;
+}
+
+.home-weather__meta {
+	font-size: 0.9rem;
+	color: #555;
+	display: flex;
+	gap: 1rem;
+	flex-wrap: wrap;
+}
+
+.home-scientist__card {
+	border-left: 4px solid var(--remc-blue);
+}
+
+.home-scientist__icon {
+	font-size: 1.75rem;
+	margin: 0;
+}
+
+.home-scientist__question {
+	font-size: 1.15rem;
+	font-weight: 600;
+}
+
+.home-program__list {
+	margin: 0.5rem 0 0 1.25rem;
+}
+
+.tutorials-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	gap: 1rem;
 }
 
 /* Print styles */

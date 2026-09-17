@@ -1,5 +1,60 @@
 # CHANGELOG.md
 
+## [0.5.0] — 2026-09-17 — Menu, Feed em carrossel, nova Home e Open-Meteo
+
+### Adicionado
+- **Serviço Open-Meteo** no plugin (`remc-core/includes/class-remc-weather.php`):
+  geocoding de Cachoeira Paulista (cache 30 dias), previsão atual + diária
+  (cache 15 min), mapeamento reutilizável de `weather_code` (OMM) para
+  descrição + ícone, e rota REST `remc/v1/weather`. Nenhum outro ponto chama a
+  API.
+- **Nova Home** em partes (`template-parts/home/`): hero com CTAs reais, "Como
+  funciona" (4 passos), "Tempo agora em Cachoeira Paulista" com previsão curta,
+  "Cientista do dia" (pergunta trocável pelo filtro `remc_scientist_question`) e
+  seção "Programa Educação" (`#programa-educacao`), preservando a lista de
+  tutoriais.
+- **Carrossel de observações** no Feed/Painel: uma observação por vez, com
+  `← Anterior`, indicador `N de M`, `Próximo →`, navegação por teclado e limites
+  respeitados. Estado explícito **Compartilhado no Feed** (com link para a
+  publicação) ou **Compartilhar no Feed**; ícone + texto (não só cor).
+- **Compartilhamento via AJAX** (`wp_ajax_remc_toggle_share`), reutilizando a
+  mesma lógica do fluxo por formulário; os links `admin-post.php` continuam como
+  fallback sem JavaScript.
+- Menu responsivo com botão (`.menu-toggle`), submenu acessível e novo arquivo
+  `assets/js/remc-ui.js`.
+
+### Alterado
+- **Menu principal**: "Timeline" → **Feed**; "Turmas" → **Turma**;
+  "Minha timeline" → **Minha Timeline** (mesma rota `/activity/?scope=just-me`).
+  Estrutura: `Início | Feed | Minha Timeline | Turma | Observações ▾` à esquerda
+  e `Tutoriais | Programa Educação` à direita (classe `remc-menu-right`).
+  Observações é dropdown com **Painel do Aluno** e **Área de Trabalho**.
+  "Painel do Professor" permanece no grupo da direita, visível só para
+  professor/administrador.
+- O menu deixa de ser replicado no rodapé (atribuído apenas a `main`).
+- `remc_share_panel()` passou a renderizar o carrossel (reutilizado pelo Painel
+  do Aluno e pela página do Feed).
+
+### Corrigido
+- O seed do bootstrap sobrescrevia o estado de revisão de observações já
+  existentes, o que podia deixar item pendente no Feed. Agora só define o estado
+  ao criar.
+- Rede de segurança `reconcile_on_save` garante que o Feed nunca mantenha
+  observação não aprovada, mesmo quando o estado muda sem transição de
+  `post_status`. Item pendente que estava no Feed foi removido.
+
+### Verificado (HTTP real)
+- Menu deslogado: Início, Feed, Turma, Tutoriais, Programa Educação (Minha
+  Timeline oculta; Observações podado sem filhos visíveis). Logado como aluno:
+  inclui Minha Timeline, Observações ▾ (Painel do Aluno, Área de Trabalho).
+- Home: dados reais da Open-Meteo renderizados (ex.: 20,2 °C, "Chuviso leve"),
+  previsão de 3 dias e REST `remc/v1/weather` respondendo 200.
+- Falha simulada de rede retorna `WP_Error` e a Home mostra aviso, sem quebrar.
+- Carrossel: 2 slides, prev/next, indicador, ambos os estados com ícone; AJAX
+  compartilhar (idempotente, sem duplicar) e remover alteram o Feed.
+- `/`, `/activity/`, `/painel-do-aluno/`, `/tutoriais/`, `/grupos/` em 200;
+  `debug.log` limpo.
+
 ## [0.4.4] — 2026-09-17 — Estado "compartilhado" vira controle clicável
 
 ### Corrigido

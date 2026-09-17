@@ -29,6 +29,7 @@ function remc_core_load() {
 	require_once REMC_CORE_DIR . 'includes/class-remc-tutorials.php';
 	require_once REMC_CORE_DIR . 'includes/class-remc-meta-boxes.php';
 	require_once REMC_CORE_DIR . 'includes/class-remc-activity.php';
+	require_once REMC_CORE_DIR . 'includes/class-remc-weather.php';
 
 	Remc_Post_Types::instance();
 	Remc_Roles_Capabilities::instance();
@@ -41,6 +42,8 @@ function remc_core_load() {
 	if ( function_exists( 'bp_is_active' ) ) {
 		Remc_Activity::instance();
 	}
+
+	Remc_Weather::instance();
 
 	if ( defined( 'WP_CLI' ) && WP_CLI ) {
 		require_once REMC_CORE_DIR . 'includes/class-remc-bootstrap-command.php';

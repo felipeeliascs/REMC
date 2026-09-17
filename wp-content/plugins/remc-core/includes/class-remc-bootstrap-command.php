@@ -405,6 +405,7 @@ class Remc_Bootstrap_Command {
 			if ( $existing ) {
 				WP_CLI::line( "Observacao ja existe: {$def['title']}" );
 				$obs_id = $existing;
+				// Nao sobrescreve o estado de revisao ja decidido pelo professor.
 			} else {
 				$obs_id = wp_insert_post( array(
 					'post_type'   => 'remc_observacao',
@@ -414,14 +415,15 @@ class Remc_Bootstrap_Command {
 					'post_date'   => get_date_from_gmt( $def['date'] ),
 				) );
 				WP_CLI::success( "Observacao criada: {$def['title']}" );
+
+				// Vocabulario de revisao (pt-BR), distinto do post_status do WordPress.
+				$review = ( 'publish' === $def['status'] ) ? 'aprovado' : 'pendente';
+				update_post_meta( $obs_id, '_status', $review );
 			}
 
 			update_post_meta( $obs_id, '_turma', $turma_id );
 			update_post_meta( $obs_id, '_local_id', $local_id );
 			update_post_meta( $obs_id, '_observation_date', $def['date'] );
-			// Vocabulario de revisao (pt-BR), distinto do post_status do WordPress.
-			$review = ( 'publish' === $def['status'] ) ? 'aprovado' : 'pendente';
-			update_post_meta( $obs_id, '_status', $review );
 			foreach ( $def['meta'] as $k => $v ) {
 				update_post_meta( $obs_id, $k, $v );
 			}
@@ -685,50 +687,95 @@ class Remc_Bootstrap_Command {
 		$timeline  = $this->directory_url( 'activity' );
 		$turmas    = $this->directory_url( 'groups' );
 
-		$desejados = array(
-			'Início'             => home_url( '/' ),
-			'Timeline'           => $timeline ? $timeline : home_url( '/activity/' ),
-			'Minha timeline'     => '#remc-minha-timeline',
-			'Turmas'             => $turmas ? $turmas : home_url( '/grupos/' ),
-			'Tutoriais'          => $tutoriais ? $tutoriais : home_url( '/tutoriais/' ),
-			'Meu perfil'         => '#remc-meu-perfil',
-			'Painel do Aluno'    => '#remc-painel-aluno',
-			'Painel do Professor' => '#remc-painel-professor',
-			'Área de trabalho'   => '#remc-logado',
+		/*
+		 * Estrutura do menu:
+		 *   [ Início | Feed | Minha Timeline | Turma | Observações ▾ ]   [ Tutoriais | Programa Educação ]
+		 *   Observações ▾: Painel do Aluno, Área de Trabalho
+		 *
+		 * "Painel do Professor" fica no grupo da direita e só aparece para
+		 * professor/administrador (regra aplicada pelo tema).
+		 */
+		$renomear = array(
+			'Timeline'       => 'Feed',
+			'Turmas'         => 'Turma',
+			'Minha timeline' => 'Minha Timeline',
 		);
 
+		$desejados = array(
+			'Início'              => array( 'url' => home_url( '/' ), 'parent' => '' ),
+			'Feed'                => array( 'url' => $timeline ? $timeline : home_url( '/activity/' ), 'parent' => '' ),
+			'Minha Timeline'      => array( 'url' => '#remc-minha-timeline', 'parent' => '' ),
+			'Turma'               => array( 'url' => $turmas ? $turmas : home_url( '/grupos/' ), 'parent' => '' ),
+			'Observações'         => array( 'url' => '#', 'parent' => '' ),
+			'Painel do Aluno'     => array( 'url' => '#remc-painel-aluno', 'parent' => 'Observações' ),
+			'Área de Trabalho'    => array( 'url' => '#remc-logado', 'parent' => 'Observações' ),
+			'Tutoriais'           => array( 'url' => $tutoriais ? $tutoriais : home_url( '/tutoriais/' ), 'parent' => '', 'classes' => 'remc-menu-right' ),
+			'Programa Educação'   => array( 'url' => home_url( '/#programa-educacao' ), 'parent' => '', 'classes' => 'remc-menu-right' ),
+			'Painel do Professor' => array( 'url' => '#remc-painel-professor', 'parent' => '', 'classes' => 'remc-menu-right' ),
+		);
+
+		// Indice dos itens existentes por titulo.
 		$existentes = array();
 		foreach ( (array) wp_get_nav_menu_items( $menu_id ) as $item ) {
 			$existentes[ $item->title ] = $item;
 		}
 
-		$position = 1;
-		$criados  = 0;
-		$ajustes  = 0;
+		// Aplica renomeacoes preservando o item (e o ID).
+		foreach ( $renomear as $antigo => $novo ) {
+			if ( isset( $existentes[ $antigo ] ) && ! isset( $existentes[ $novo ] ) ) {
+				$item = $existentes[ $antigo ];
+				wp_update_nav_menu_item( $menu_id, $item->ID, array(
+					'menu-item-title'  => $novo,
+					'menu-item-status' => 'publish',
+					'menu-item-type'   => 'custom',
+				) );
+				$existentes[ $novo ] = $item;
+				unset( $existentes[ $antigo ] );
+			}
+		}
 
-		foreach ( $desejados as $titulo => $url ) {
+		// Remove itens que nao fazem mais parte do menu.
+		foreach ( $existentes as $titulo => $item ) {
+			if ( ! isset( $desejados[ $titulo ] ) ) {
+				wp_delete_post( $item->ID, true );
+				unset( $existentes[ $titulo ] );
+			}
+		}
+
+		$posicao = 1;
+		$ids     = array();
+		$criados = 0;
+		$ajustes = 0;
+
+		foreach ( $desejados as $titulo => $cfg ) {
+			$parent_id = 0;
+			if ( ! empty( $cfg['parent'] ) && isset( $ids[ $cfg['parent'] ] ) ) {
+				$parent_id = (int) $ids[ $cfg['parent'] ];
+			}
+
+			$args = array(
+				'menu-item-title'     => $titulo,
+				'menu-item-url'       => $cfg['url'],
+				'menu-item-parent-id' => $parent_id,
+				'menu-item-position'  => $posicao,
+				'menu-item-status'    => 'publish',
+				'menu-item-type'      => 'custom',
+				'menu-item-classes'   => isset( $cfg['classes'] ) ? $cfg['classes'] : '',
+			);
+
 			if ( isset( $existentes[ $titulo ] ) ) {
 				$item = $existentes[ $titulo ];
-				if ( $item->url !== $url ) {
-					wp_update_nav_menu_item( $menu_id, $item->ID, array(
-						'menu-item-title'  => $titulo,
-						'menu-item-url'    => $url,
-						'menu-item-status' => 'publish',
-						'menu-item-type'   => 'custom',
-					) );
-					$ajustes++;
-				}
+				wp_update_nav_menu_item( $menu_id, $item->ID, $args );
+				$ids[ $titulo ] = $item->ID;
+				$ajustes++;
 			} else {
-				wp_update_nav_menu_item( $menu_id, 0, array(
-					'menu-item-title'    => $titulo,
-					'menu-item-url'      => $url,
-					'menu-item-status'   => 'publish',
-					'menu-item-type'     => 'custom',
-					'menu-item-position' => $position,
-				) );
-				$criados++;
+				$novo_id = wp_update_nav_menu_item( $menu_id, 0, $args );
+				if ( ! is_wp_error( $novo_id ) ) {
+					$ids[ $titulo ] = $novo_id;
+					$criados++;
+				}
 			}
-			$position++;
+			$posicao++;
 		}
 
 		if ( $criados ) {
@@ -740,6 +787,10 @@ class Remc_Bootstrap_Command {
 
 		$locations         = (array) get_theme_mod( 'nav_menu_locations', array() );
 		$locations['main'] = $menu_id;
+		// O rodape nao replica o menu principal.
+		if ( isset( $locations['footer'] ) && (int) $locations['footer'] === (int) $menu_id ) {
+			unset( $locations['footer'] );
+		}
 		set_theme_mod( 'nav_menu_locations', $locations );
 	}
 
