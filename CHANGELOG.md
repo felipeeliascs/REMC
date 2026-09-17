@@ -1,5 +1,37 @@
 # CHANGELOG.md
 
+## [0.2.0] — 2026-09-17 — Modernização da stack (WordPress 7.1 + BuddyPress 14.5.2)
+
+### Alterado
+- `compose.yaml`: imagem do WordPress para `wordpress:7.1-php8.3-apache` e
+  `wordpress:cli-php8.3` (PHP 8.1.34 → 8.3.33).
+- BuddyPress atualizado de 12.2.0 para **14.5.2**.
+- WordPress atualizado de 6.4.3 para **7.1** (core no volume + imagem fixada).
+- `scripts/remc-modernize.ps1`: script de modernização reproduzível
+  (pull, recriação do container, atualização do BP, componentes e verificação).
+- `docs/versoes.md`: seção "Modernização da stack", preservando as versões
+  históricas.
+- `RECONSTRUCTION.md`: ordem dos commits e distinção entre reconstrução e
+  modernização.
+
+### Corrigido
+- Aviso do BuddyPress 12.2.0 em WordPress ≥ 6.7
+  (`_load_textdomain_just_in_time`), resolvido pela atualização do BuddyPress.
+- `activity` e `notifications` desativados, pois o BP 14.x os ativa por padrão
+  e o MVP exige o feed de atividades desativado.
+
+### Preservado
+- O estado histórico (WordPress 6.4.3 + BuddyPress 12.2.0) permanece no commit
+  `e0019b5` da reconstrução.
+- MariaDB mantido em 10.6.16 (compatível com o BP 14.x, sem migração de dados).
+
+### Verificado
+- HTTP 200, sem avisos no `debug.log`.
+- Bootstrap idempotente sem duplicação.
+- Validações: 15 voltas/30 s = 30 RPM; duração 0 recusada; `0 mm` = 0;
+  `23,5` → 23.5; direção `NO` preservada.
+- Grupos Turma A e Turma B permanecem `hidden`.
+
 ## [0.1.0] — 2026-09-17 — Reconstrução MVP REMC
 
 ### Adicionado

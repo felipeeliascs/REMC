@@ -1,6 +1,13 @@
 # Documentação - Versões da REMC
 
-## Versões Fixadas
+> **Importante:** este documento descreve duas configurações.
+> A **reconstrução histórica** (WordPress 6.4.3 + BuddyPress 12.2.0) é o corte
+> original de 31/01/2024 e continua preservada no primeiro commit do repositório.
+> A **modernização** (WordPress 7.1 + BuddyPress 14.5.2 + PHP 8.3) foi aplicada
+> depois, por decisão do responsável, e está registrada na seção
+> "Modernização da stack". As duas não são equivalentes.
+
+## 1. Versões da reconstrução histórica (corte 31/01/2024)
 
 | Componente | Versão | Data de Lançamento | Notas |
 |------------|--------|-------------------|-------|
@@ -8,6 +15,7 @@
 | BuddyPress | 12.2.0 | 23/01/2024 | Versão específica para MVP |
 | PHP | 8.1.x | - | Linha 8.1, compatível com WP 6.4.3 |
 | MariaDB | 10.6.x | - | Linha 10.6, compatível com WP 6.4.3 |
+
 
 ## Data de Corte
 
@@ -107,3 +115,67 @@ Componentes desativados (fora do MVP): `activity`, `friends`, `messages`, `blogs
 2. Revalidar compatibilidade
 3. Testar cuidadosamente em staging
 4. Realizar backup antes de atualizações
+
+## 2. Modernização da stack
+
+Aplicada em **17/09/2026**, por decisão do responsável, mantendo o histórico
+anterior no primeiro commit da reconstrução. O estado histórico não foi apagado:
+ele permanece recuperável pelo commit `e0019b5`.
+
+| Componente | Antes (histórico) | Depois (moderno) | Observação |
+|------------|-------------------|------------------|------------|
+| WordPress | 6.4.3 | **7.1** | Core atualizado no volume e imagem fixada em `wordpress:7.1-php8.3-apache` |
+| BuddyPress | 12.2.0 | **14.5.2** | Requer WP 6.1+; testado até 7.0.4 |
+| PHP | 8.1.34 | **8.3.33** | Imagem `wordpress:7.1-php8.3-apache` / CLI `wordpress:cli-php8.3` |
+| MariaDB | 10.6.16 | 10.6.16 (mantido) | Atende ao requisito do BP (10.4+); sem migração de dados |
+| Docker Desktop | 4.91.0 | 4.91.0 | Ferramenta atual |
+| WSL | 2.7.14 | 2.7.14 | Backend do Docker |
+
+### Motivo
+
+O responsável atualizou o WordPress para 7.1. Com o BuddyPress 12.2.0 em um
+WordPress ≥ 6.7, surgia o aviso:
+
+```
+PHP Notice: Function _load_textdomain_just_in_time was called incorrectly.
+Translation loading for the "buddypress" domain was triggered too early.
+(This message was added in version 6.7.0.)
+```
+
+Problema de compatibilidade do BuddyPress 12.2.0 (jan/2024) com WordPress ≥ 6.7,
+não do código da REMC. A correção escolhida foi modernizar o BuddyPress junto
+com o WordPress.
+
+### Verificação executada após a modernização (17/09/2026)
+
+```
+wp core version         -> 7.1
+wp plugin get buddypress--field=version -> 14.5.2
+php -v (container)      -> 8.3.33
+HTTP http://127.0.0.1/  -> 200 OK
+debug.log               -> sem avisos/erros
+bootstrap (2a execucao) -> sem duplicacao (1 escola, 4 locais, 5 observacoes,
+                           13 tutoriais, 2 atividades, 6 usuarios)
+grupos                  -> Turma A e Turma B com status hidden
+componentes BP          -> core, members, xprofile, settings, groups
+                           (activity, notifications, friends, messages,
+                           blogs desativados)
+validacoes              -> 15/30s = 30 RPM; duracao 0 recusada; 0 mm = 0;
+                           "23,5" -> 23.5; direcao "NO" preservada
+```
+
+### Diferenças de comportamento observadas
+
+- BuddyPress 14.x ativa `activity` e `notifications` por padrão; ambos foram
+  desativados para manter o requisito do MVP (feed de atividades desativado).
+- Os nomes das APIs de grupos usados pelo `remc-core` (`groups_create_group`,
+  `groups_get_id`, `groups_edit_group_settings`, `groups_update_groupmeta`,
+  `groups_join_group`, `groups_promote_member`) permanecem válidos no BP 14.x.
+- Não foi usada nenhuma API introduzida depois do corte no código do produto;
+  a modernização é apenas de ambiente.
+
+### O que não foi modernizado
+
+- MariaDB mantido em 10.6.16 (sem risco de migração e compatível com o BP 14.x).
+- Sem Multisite, sem dependências pagas, sem frameworks.
+
