@@ -1,5 +1,29 @@
 # CHANGELOG.md
 
+## [0.4.3] — 2026-09-17 — Feedback do compartilhamento e correção do menu
+
+### Corrigido
+- O item de menu **"Minha timeline"** apontava para
+  `/members/<login>/activity/`, que no BuddyPress 14 responde **301 para o
+  perfil** — ou seja, levava a lugar nenhum útil. Passou a apontar para
+  `/activity/?scope=just-me`, que funciona.
+- O aviso de resultado do compartilhamento só aparecia nas páginas que
+  renderizavam o painel. Agora é exibido no início do `<body>`
+  (`wp_body_open`), então o retorno aparece em **qualquer** página de origem.
+- `nocache_headers()` antes do redirecionamento, para o navegador não mostrar
+  a página em cache (o que dava a impressão de que nada acontecia).
+
+### Documentado
+- `DESENVOLVIMENTO.md`: nota de que `/members/<login>/activity/` redireciona para o
+  perfil no BP 14; a timeline do usuário é `/activity/?scope=just-me`.
+
+### Verificado (HTTP real, login como aluno)
+- Menu: "Minha timeline" -> `/activity/?scope=just-me` (200).
+- Ação a partir de `/activity/` e de `/members/aluno_joao/` altera o feed
+  (1 -> 0 ao remover, 0 -> 1 ao compartilhar) e o aviso aparece na página de
+  retorno.
+- `debug.log` sem erros de front-end.
+
 ## [0.4.2] — 2026-09-17 — Compartilhar direto na página do feed
 
 ### Corrigido

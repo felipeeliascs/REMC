@@ -227,10 +227,22 @@ function remc_filter_nav_menu_objects( $items, $args = null ) {
 
 		switch ( $rule ) {
 			case 'minha-timeline':
-				if ( ! $logged_in || ! $member_url ) {
+				if ( ! $logged_in ) {
 					continue 2;
 				}
-				$item->url = trailingslashit( $member_url ) . 'activity/';
+				// Nesta versão do BuddyPress a página de atividade do membro
+				// redireciona para o perfil; o diretório com escopo "just-me" é
+				// o caminho que funciona para ver a própria atividade.
+				$base = '';
+				if ( function_exists( 'bp_get_activity_directory_url' ) ) {
+					$base = bp_get_activity_directory_url();
+				} elseif ( function_exists( 'bp_get_activity_directory_permalink' ) ) {
+					$base = bp_get_activity_directory_permalink();
+				}
+				if ( ! $base ) {
+					$base = home_url( '/activity/' );
+				}
+				$item->url = add_query_arg( 'scope', 'just-me', $base );
 				break;
 
 			case 'meu-perfil':
@@ -298,21 +310,6 @@ function remc_share_panel( $args = array() ) {
 
 	$args  = wp_parse_args( $args, array( 'mostrar_titulo' => true ) );
 	$user  = wp_get_current_user();
-
-	$remc_feed = isset( $_GET['remc_feed'] ) ? sanitize_key( wp_unslash( $_GET['remc_feed'] ) ) : '';
-	if ( $remc_feed ) {
-		$msgs = array(
-			'shared'   => __( 'Dados compartilhados no feed da comunidade.', 'remc-educacional' ),
-			'unshared' => __( 'Dados removidos do feed.', 'remc-educacional' ),
-			'error'    => __( 'Não foi possível compartilhar agora. Tente novamente.', 'remc-educacional' ),
-		);
-		$tipo = ( 'error' === $remc_feed ) ? 'error' : 'success';
-		printf(
-			'<div class="form-status %s" role="status">%s</div>',
-			esc_attr( $tipo ),
-			esc_html( isset( $msgs[ $remc_feed ] ) ? $msgs[ $remc_feed ] : '' )
-		);
-	}
 
 	if ( $args['mostrar_titulo'] ) {
 		echo '<h2>' . esc_html__( 'Compartilhar dados meteorológicos', 'remc-educacional' ) . '</h2>';
@@ -416,3 +413,36 @@ function remc_activity_share_panel() {
 	remc_share_panel();
 	echo '</div>';
 }
+
+/**
+ * Aviso global do resultado do compartilhamento.
+ *
+ * Renderizado no início do <body> para que o retorno apareça em QUALQUER
+ * página (a ação redireciona de volta para a página de origem).
+ */
+function remc_feed_notice() {
+	if ( ! is_user_logged_in() ) {
+		return;
+	}
+
+	$feed = isset( $_GET['remc_feed'] ) ? sanitize_key( wp_unslash( $_GET['remc_feed'] ) ) : '';
+	if ( ! $feed ) {
+		return;
+	}
+
+	$msgs = array(
+		'shared'   => __( 'Dados compartilhados no feed da comunidade.', 'remc-educacional' ),
+		'unshared' => __( 'Dados removidos do feed.', 'remc-educacional' ),
+		'error'    => __( 'Não foi possível compartilhar agora. Tente novamente.', 'remc-educacional' ),
+	);
+	if ( ! isset( $msgs[ $feed ] ) ) {
+		return;
+	}
+
+	printf(
+		'<div class="container"><div class="form-status %s" role="status">%s</div></div>',
+		esc_attr( 'error' === $feed ? 'error' : 'success' ),
+		esc_html( $msgs[ $feed ] )
+	);
+}
+add_action( 'wp_body_open', 'remc_feed_notice' );

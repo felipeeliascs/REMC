@@ -339,9 +339,14 @@ class Remc_Activity {
 		}
 
 		$back = wp_get_referer();
-		$back = $back ? $back : admin_url( 'edit.php?post_type=remc_observacao' );
+		if ( ! $back ) {
+			$back = function_exists( 'bp_get_activity_directory_url' )
+				? bp_get_activity_directory_url()
+				: home_url( '/activity/' );
+		}
 		$back = add_query_arg( 'remc_feed', $resultado, $back );
 
+		nocache_headers();
 		wp_safe_redirect( $back );
 		exit;
 	}
