@@ -1,3 +1,18 @@
+/*
+Theme Name: REMC Educacional
+Theme URI: http://127.0.0.1/
+Author: REMC Team
+Description: Tema educacional da Rede Educacional de Monitoramento Climático (REMC).
+Version: 0.5.0
+Requires at least: 6.4
+Tested up to: 7.1
+Requires PHP: 8.1
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: remc-educacional
+Tags: education, weather, accessibility-ready
+*/
+
 /* REMC Core Styles */
 :root {
 	--remc-blue: #0066cc;
@@ -34,6 +49,7 @@ a:hover {
 
 /* Header */
 .header {
+	background-color: #0066cc;
 	background-color: var(--remc-blue);
 	color: #fff;
 	padding: 1rem 0;
@@ -46,6 +62,7 @@ a:hover {
 
 /* Navigation */
 .nav-main {
+	background-color: #2e8b57;
 	background-color: var(--remc-green);
 }
 
@@ -83,12 +100,12 @@ a:hover {
 	text-decoration: none;
 }
 
-/* Grupo alinhado à direita (Tutoriais | Programa Educação) */
+/* Grupo alinhado Ã  direita (Tutoriais | Programa EducaÃ§Ã£o) */
 .nav-main .remc-menu-right {
 	margin-left: auto;
 }
 
-/* Submenu (Observações ▾) */
+/* Submenu (ObservaÃ§Ãµes â–¾) */
 .nav-main .sub-menu {
 	display: none;
 	position: absolute;
@@ -110,11 +127,11 @@ a:hover {
 }
 
 .nav-main .menu-item-has-children > a::after {
-	content: " ▾";
+	content: " â–¾";
 	font-size: 0.75em;
 }
 
-/* Botão do menu (telas pequenas) */
+/* BotÃ£o do menu (telas pequenas) */
 .menu-toggle {
 	display: none;
 	align-items: center;
@@ -230,7 +247,7 @@ th {
 	background-color: #5a6268;
 }
 
-/* Estado "compartilhado": controle clicável, verde, com ação explícita */
+/* Estado "compartilhado": controle clicÃ¡vel, verde, com aÃ§Ã£o explÃ­cita */
 .button.remc-shared {
 	background-color: var(--remc-green);
 	color: #fff;
@@ -263,7 +280,7 @@ th {
 	margin-bottom: 2rem;
 }
 
-/* Prévia do feed (Painel do Aluno) */
+/* PrÃ©via do feed (Painel do Aluno) */
 .feed-preview {
 	margin: 0.5rem 0 1rem;
 	padding: 0.75rem 1rem;
@@ -282,7 +299,7 @@ th {
 	font-weight: 600;
 }
 
-/* Painel de compartilhamento na página de atividades */
+/* Painel de compartilhamento na pÃ¡gina de atividades */
 .remc-share-panel {
 	margin: 1rem 0 1.5rem;
 	padding: 1rem;
@@ -348,7 +365,7 @@ th {
 	position: absolute;
 }
 
-/* Carrossel de observações (Feed / Painel do Aluno) */
+/* Carrossel de observaÃ§Ãµes (Feed / Painel do Aluno) */
 .remc-carousel__viewport {
 	position: relative;
 }
@@ -438,7 +455,7 @@ th {
 	margin: 0;
 }
 
-/* Página inicial */
+/* PÃ¡gina inicial */
 .home-hero {
 	padding: 2rem 0 1rem;
 }
