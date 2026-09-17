@@ -42,6 +42,11 @@ class Remc_Bootstrap_Command {
 			$this->delete_demo_data();
 		}
 
+		// Normaliza acentuacao de dados antigos ANTES de reconciliar.
+		$this->ensure_site_identity();
+		$this->migrate_seed_titles();
+		$this->refresh_feed_content();
+
 		if ( ! $this->buddypress_ready() ) {
 			WP_CLI::error( 'BuddyPress nao esta ativo com o componente "groups". Ative o BuddyPress e os componentes.' );
 			return;
@@ -53,8 +58,8 @@ class Remc_Bootstrap_Command {
 		$this->professor_b = $this->ensure_professor( 'professor_b', 'Professor B (Turma B)', $this->escola_id );
 		$this->aluno_ids   = $this->ensure_students();
 
-		$this->turmas['A'] = $this->ensure_turma( 'Turma A - 5o Ano', 'Turma do 5o ano com foco em ciencias', $this->professor_a );
-		$this->turmas['B'] = $this->ensure_turma( 'Turma B - 6o Ano', 'Turma do 6o ano com foco em meio ambiente', $this->professor_b );
+		$this->turmas['A'] = $this->ensure_turma( 'Turma A - 5º Ano', 'Turma do 5º ano com foco em ciências', $this->professor_a );
+		$this->turmas['B'] = $this->ensure_turma( 'Turma B - 6º Ano', 'Turma do 6º ano com foco em meio ambiente', $this->professor_b );
 
 		$this->link_students();
 		$this->local_ids = $this->ensure_locals();
@@ -119,7 +124,7 @@ class Remc_Bootstrap_Command {
 	/* ------------------------------------------------------------------ */
 
 	private function ensure_school() {
-		$title = 'Escola Exemplo (DADOS FICTICIOS)';
+		$title = 'Escola Exemplo (DADOS FICTÍCIOS)';
 		$id    = $this->find_post_by_title( $title, 'remc_escola' );
 		$created = false;
 
@@ -221,7 +226,7 @@ class Remc_Bootstrap_Command {
 			$gid = groups_create_group( array(
 				'name'          => $name,
 				'slug'          => $slug,
-				'description'   => $description . ' (DADOS FICTICIOS)',
+				'description'   => $description . ' (DADOS FICTÍCIOS)',
 				'status'        => 'hidden',
 				'invite_status' => 'invitations_required',
 				'hide_sitewide' => 1,
@@ -285,7 +290,7 @@ class Remc_Bootstrap_Command {
 			$professor = ( 'A' === $letra ) ? $this->professor_a : $this->professor_b;
 
 			foreach ( $defs as $def ) {
-				$title = "Ponto {$def['tipo']} - Turma {$letra} (DADOS FICTICIOS)";
+				$title = "Ponto {$def['tipo']} - Turma {$letra} (DADOS FICTÍCIOS)";
 				$id    = $this->find_post_by_title( $title, 'remc_local' );
 				$created = false;
 
@@ -319,7 +324,7 @@ class Remc_Bootstrap_Command {
 
 		$defs = array(
 			array(
-				'title'  => 'Registro Pluviometrico com chuva (DADOS FICTICIOS)',
+				'title'  => 'Registro Pluviométrico com chuva (DADOS FICTÍCIOS)',
 				'turma'  => 'A',
 				'local'  => 'escola',
 				'author' => 'aluno_joao',
@@ -335,7 +340,7 @@ class Remc_Bootstrap_Command {
 				),
 			),
 			array(
-				'title'  => 'Registro Pluviometrico sem chuva (DADOS FICTICIOS)',
+				'title'  => 'Registro Pluviométrico sem chuva (DADOS FICTÍCIOS)',
 				'turma'  => 'A',
 				'local'  => 'casa',
 				'author' => 'aluno_maria',
@@ -349,7 +354,7 @@ class Remc_Bootstrap_Command {
 				),
 			),
 			array(
-				'title'  => 'Contagem do anemometro - 15 voltas/30s (DADOS FICTICIOS)',
+				'title'  => 'Contagem do anemômetro - 15 voltas/30s (DADOS FICTÍCIOS)',
 				'turma'  => 'A',
 				'local'  => 'escola',
 				'author' => 'aluno_joao',
@@ -365,7 +370,7 @@ class Remc_Bootstrap_Command {
 				),
 			),
 			array(
-				'title'  => 'Deslocamento do barometro (DADOS FICTICIOS)',
+				'title'  => 'Deslocamento do barômetro (DADOS FICTÍCIOS)',
 				'turma'  => 'A',
 				'local'  => 'casa',
 				'author' => 'aluno_maria',
@@ -379,7 +384,7 @@ class Remc_Bootstrap_Command {
 				),
 			),
 			array(
-				'title'  => 'Cobertura de nuvens e extremos termicos (DADOS FICTICIOS)',
+				'title'  => 'Cobertura de nuvens e extremos térmicos (DADOS FICTÍCIOS)',
 				'turma'  => 'B',
 				'local'  => 'escola',
 				'author' => 'aluno_pedro',
@@ -439,7 +444,7 @@ class Remc_Bootstrap_Command {
 			return;
 		}
 
-		$title = 'Registro Pluviometrico com chuva (DADOS FICTICIOS)';
+		$title = 'Registro Pluviométrico com chuva (DADOS FICTÍCIOS)';
 		$obs_id = $this->find_post_by_title( $title, 'remc_observacao' );
 		if ( ! $obs_id ) {
 			return;
@@ -465,20 +470,21 @@ class Remc_Bootstrap_Command {
 		}
 	}
 
-	private function ensure_tutorials() {		$tutoriais = array(
-			array( 'I01', 'Pluviometro de Garrafa PET', 'instrumentos', 'Construir, instalar e usar um pluviometro caseiro, distinguindo volume coletado de altura de precipitacao.' ),
-			array( 'I02', 'Anemometro de Copos', 'instrumentos', 'Construir um anemometro e comparar a rotacao sob condicoes diferentes.' ),
-			array( 'I03', 'Barometro de Bexiga', 'instrumentos', 'Construir um barometro, definir linha de referencia e observar o deslocamento do ponteiro.' ),
-			array( 'E01', 'Nuvem na Garrafa', 'experimentos', 'Investigar umidade, expansao/resfriamento e condensacao, incluindo nucleos de condensacao.' ),
-			array( 'E02', 'Mini Ciclo da Agua / Chuva no Pote', 'experimentos', 'Observar evaporacao, condensacao e retorno de goticulas em um modelo do ciclo da agua.' ),
+	private function ensure_tutorials() {
+		$tutoriais = array(
+			array( 'I01', 'Pluviômetro de Garrafa PET', 'instrumentos', 'Construir, instalar e usar um pluviômetro caseiro, distinguindo volume coletado de altura de precipitação.' ),
+			array( 'I02', 'Anemômetro de Copos', 'instrumentos', 'Construir um anemômetro e comparar a rotação sob condições diferentes.' ),
+			array( 'I03', 'Barômetro de Bexiga', 'instrumentos', 'Construir um barômetro, definir linha de referência e observar o deslocamento do ponteiro.' ),
+			array( 'E01', 'Nuvem na Garrafa', 'experimentos', 'Investigar umidade, expansão/resfriamento e condensação, incluindo núcleos de condensação.' ),
+			array( 'E02', 'Mini Ciclo da Água / Chuva no Pote', 'experimentos', 'Observar evaporação, condensação e retorno de gotículas em um modelo do ciclo da água.' ),
 			array( 'E03', 'Experimento das Duas Vasilhas', 'experimentos', 'Comparar temperaturas em duas montagens controladas e discutir os limites da analogia com o efeito estufa.' ),
-			array( 'R01', 'Registro Pluviometrico Diario', 'rotinas', 'Registrar quantidade em mm, instrumento, inicio/fim da acumulacao e ocorrencias.' ),
-			array( 'R02', 'Monitoramento da Pressao Atmosferica com Escala Milimetrada', 'rotinas', 'Manter serie de deslocamento do ponteiro (mm) por instrumento/referencia e interpretar tendencias.' ),
-			array( 'R03', 'Contagem de Velocidade do Vento em RPM', 'rotinas', 'Contar voltas do anemometro e calcular RPM, lembrando que a grandeza e rotacao.' ),
-			array( 'R04', 'Mapeamento e Classificacao Visual de Nuvens', 'rotinas', 'Identificar generos (OMM), cobertura em oitavos, horario e setor do ceu.' ),
-			array( 'R05', 'Rosa dos Ventos Humana', 'rotinas', 'Identificar referencias de orientacao e registrar a direcao de ORIGEM do vento.' ),
-			array( 'R06', 'O Experimento da Amplitude Termica Diaria', 'rotinas', 'Registrar extremos ou observacoes pontuais e calcular a diferenca com a devida limitacao de cobertura.' ),
-			array( 'R07', 'Previsao do Tempo do Aluno', 'rotinas', 'Registrar hipotese antecipada, confrontar com observacoes reais e refletir sobre o resultado.' ),
+			array( 'R01', 'Registro Pluviométrico Diário', 'rotinas', 'Registrar quantidade em mm, instrumento, início/fim da acumulação e ocorrências.' ),
+			array( 'R02', 'Monitoramento da Pressão Atmosférica com Escala Milimetrada', 'rotinas', 'Manter série de deslocamento do ponteiro (mm) por instrumento/referência e interpretar tendências.' ),
+			array( 'R03', 'Contagem de Velocidade do Vento em RPM', 'rotinas', 'Contar voltas do anemômetro e calcular RPM, lembrando que a grandeza é rotação.' ),
+			array( 'R04', 'Mapeamento e Classificação Visual de Nuvens', 'rotinas', 'Identificar gêneros (OMM), cobertura em oitavos, horário e setor do céu.' ),
+			array( 'R05', 'Rosa dos Ventos Humana', 'rotinas', 'Identificar referências de orientação e registrar a direção de ORIGEM do vento.' ),
+			array( 'R06', 'O Experimento da Amplitude Térmica Diária', 'rotinas', 'Registrar extremos ou observações pontuais e calcular a diferença com a devida limitação de cobertura.' ),
+			array( 'R07', 'Previsão do Tempo do Aluno', 'rotinas', 'Registrar hipótese antecipada, confrontar com observações reais e refletir sobre o resultado.' ),
 		);
 
 		foreach ( $tutoriais as $t ) {
@@ -491,10 +497,19 @@ class Remc_Bootstrap_Command {
 				$id = wp_insert_post( array(
 					'post_type'    => 'remc_tutorial',
 					'post_title'   => $title,
-					'post_content' => "Material didatico da REMC (reconstrucao). Guia: {$nome}.",
+					'post_content' => "Material didático da REMC (reconstrução). Guia: {$nome}.",
 					'post_status'  => 'publish',
 				) );
 				$created = true;
+			} else {
+				// Mantem o texto de apoio alinhado, sem sobrescrever conteudo editorial.
+				$atual = (string) get_post_field( 'post_content', $id );
+				if ( '' === $atual || 0 === strpos( $atual, 'Material didatico' ) || 0 === strpos( $atual, 'Material didático' ) ) {
+					wp_update_post( array(
+						'ID'           => $id,
+						'post_content' => "Material didático da REMC (reconstrução). Guia: {$nome}.",
+					) );
+				}
 			}
 
 			wp_set_object_terms( $id, $categoria, 'remc_tutorial_cat' );
@@ -502,15 +517,15 @@ class Remc_Bootstrap_Command {
 			$meta = array(
 				'_codigo'            => $codigo,
 				'_objective'         => $objetivo,
-				'_materials'         => 'Materiais acessiveis/reutilizados (detalhar no guia).',
+				'_materials'         => 'Materiais acessíveis/reutilizados (detalhar no guia).',
 				'_steps'             => 'Etapas definidas no guia editorial.',
 				'_reading_mode'      => 'Individual ou em grupo',
 				'_unit'              => $this->unit_for( $codigo ),
-				'_limitations'       => 'Instrumento artesanal: registro educativo nao equivale a medicao oficial.',
-				'_precautions'       => 'Supervisao adulta em cortes e agua aquecida. Sem chama, solventes ou pressurizadores improvisados.',
+				'_limitations'       => 'Instrumento artesanal: registro educativo não equivale à medição oficial.',
+				'_precautions'       => 'Supervisão adulta em cortes e água aquecida. Sem chama, solventes ou pressurizadores improvisados.',
 				'_collection_fields' => $this->fields_for( $codigo ),
 				'_version'           => '1.0',
-				'_is_fictional'      => 'DADOS FICTICIOS',
+				'_is_fictional'      => 'DADOS FICTÍCIOS',
 			);
 			foreach ( $meta as $k => $v ) {
 				update_post_meta( $id, $k, $v );
@@ -522,38 +537,38 @@ class Remc_Bootstrap_Command {
 
 	private function unit_for( $codigo ) {
 		$units = array(
-			'I01' => 'mm de precipitacao',
-			'I02' => 'RPM (rotacoes por minuto)',
+			'I01' => 'mm de precipitação',
+			'I02' => 'RPM (rotações por minuto)',
 			'I03' => 'mm de deslocamento do ponteiro',
-			'E01' => 'observacao visual',
-			'E02' => 'observacao visual',
+			'E01' => 'observação visual',
+			'E02' => 'observação visual',
 			'E03' => 'graus Celsius (C)',
 			'R01' => 'mm',
 			'R02' => 'mm',
 			'R03' => 'RPM',
-			'R04' => 'generos (OMM) e oitavos (0-8)',
-			'R05' => 'direcao cardinal de origem',
+			'R04' => 'gêneros (OMM) e oitavos (0-8)',
+			'R05' => 'direção cardinal de origem',
 			'R06' => 'graus Celsius (C)',
-			'R07' => 'hipotese (sem unidade)',
+			'R07' => 'hipótese (sem unidade)',
 		);
 		return isset( $units[ $codigo ] ) ? $units[ $codigo ] : '';
 	}
 
 	private function fields_for( $codigo ) {
 		$fields = array(
-			'I01' => 'Volume coletado (ml); area de captacao (cm2); altura (mm)',
+			'I01' => 'Volume coletado (ml); área de captação (cm²); altura (mm)',
 			'I02' => 'Voltas; segundos; RPM calculada',
-			'I03' => 'Deslocamento (mm); referencia; orientacao da escala',
-			'E01' => 'Condicoes testadas; goticulas visiveis (sim/nao)',
-			'E02' => 'Condicoes testadas; sequencia observada',
-			'E03' => 'Material; conteudo; cobertura; exposicao; temperaturas por tempo',
-			'R01' => 'Precipitacao (mm); inicio/fim; horario; esvaziamento',
-			'R02' => 'Deslocamento (mm); referencia; orientacao; tendencia',
-			'R03' => 'Voltas; segundos; RPM; direcao do vento',
-			'R04' => 'Generos; cobertura (0-8); horario; setor',
-			'R05' => 'Direcao de origem; calmaria/variavel; horario',
-			'R06' => 'Tmin; Tmax; metodo; instrumento; periodo',
-			'R07' => 'Hipotese; justificativa; evidencias; confronto; reflexao',
+			'I03' => 'Deslocamento (mm); referência; orientação da escala',
+			'E01' => 'Condições testadas; gotículas visíveis (sim/não)',
+			'E02' => 'Condições testadas; sequência observada',
+			'E03' => 'Material; conteúdo; cobertura; exposição; temperaturas por tempo',
+			'R01' => 'Precipitação (mm); início/fim; horário; esvaziamento',
+			'R02' => 'Deslocamento (mm); referência; orientação; tendência',
+			'R03' => 'Voltas; segundos; RPM; direção do vento',
+			'R04' => 'Gêneros; cobertura (0-8); horário; setor',
+			'R05' => 'Direção de origem; calmaria/variável; horário',
+			'R06' => 'Tmín; Tmáx; método; instrumento; período',
+			'R07' => 'Hipótese; justificativa; evidências; confronto; reflexão',
 		);
 		return isset( $fields[ $codigo ] ) ? $fields[ $codigo ] : '';
 	}
@@ -561,7 +576,7 @@ class Remc_Bootstrap_Command {
 	private function ensure_activities() {
 		$defs = array(
 			array(
-				'title'  => 'Relatorio de experimento - Nuvem na Garrafa (DADOS FICTICIOS)',
+				'title'  => 'Relatório de experimento - Nuvem na Garrafa (DADOS FICTÍCIOS)',
 				'author' => 'aluno_joao',
 				'turma'  => 'A',
 				'meta'   => array(
@@ -573,7 +588,7 @@ class Remc_Bootstrap_Command {
 				),
 			),
 			array(
-				'title'  => 'Previsao do tempo - 24h (DADOS FICTICIOS)',
+				'title'  => 'Previsão do tempo - 24h (DADOS FICTÍCIOS)',
 				'author' => 'aluno_maria',
 				'turma'  => 'A',
 				'meta'   => array(
@@ -795,6 +810,166 @@ class Remc_Bootstrap_Command {
 	}
 
 	/**
+	 * Identidade do site com acentuação correta (idempotente).
+	 */
+	private function ensure_site_identity() {
+		update_option( 'blogname', 'REMC — Rede Educacional de Monitoramento Climático' );
+		update_option( 'blogdescription', 'Programa Educação CPTEC/INPE — observe, registre, compartilhe e aprenda.' );
+	}
+
+	/**
+	 * Mapa de titulos/rotulos antigos (sem acento) para os corretos.
+	 *
+	 * Usado para renomear dados de demonstracao ja existentes sem duplicar.
+	 */
+	private static function accent_map() {
+		return array(
+			'posts'   => array(
+				'Escola Exemplo (DADOS FICTICIOS)'                                   => 'Escola Exemplo (DADOS FICTÍCIOS)',
+				'Ponto escola - Turma A (DADOS FICTICIOS)'                           => 'Ponto escola - Turma A (DADOS FICTÍCIOS)',
+				'Ponto casa - Turma A (DADOS FICTICIOS)'                             => 'Ponto casa - Turma A (DADOS FICTÍCIOS)',
+				'Ponto escola - Turma B (DADOS FICTICIOS)'                           => 'Ponto escola - Turma B (DADOS FICTÍCIOS)',
+				'Ponto casa - Turma B (DADOS FICTICIOS)'                             => 'Ponto casa - Turma B (DADOS FICTÍCIOS)',
+				'Registro Pluviometrico com chuva (DADOS FICTICIOS)'                 => 'Registro Pluviométrico com chuva (DADOS FICTÍCIOS)',
+				'Registro Pluviometrico sem chuva (DADOS FICTICIOS)'                 => 'Registro Pluviométrico sem chuva (DADOS FICTÍCIOS)',
+				'Contagem do anemometro - 15 voltas/30s (DADOS FICTICIOS)'           => 'Contagem do anemômetro - 15 voltas/30s (DADOS FICTÍCIOS)',
+				'Deslocamento do barometro (DADOS FICTICIOS)'                        => 'Deslocamento do barômetro (DADOS FICTÍCIOS)',
+				'Cobertura de nuvens e extremos termicos (DADOS FICTICIOS)'          => 'Cobertura de nuvens e extremos térmicos (DADOS FICTÍCIOS)',
+				'Relatorio de experimento - Nuvem na Garrafa (DADOS FICTICIOS)'      => 'Relatório de experimento - Nuvem na Garrafa (DADOS FICTÍCIOS)',
+				'Previsao do tempo - 24h (DADOS FICTICIOS)'                          => 'Previsão do tempo - 24h (DADOS FICTÍCIOS)',
+				'I01 - Pluviometro de Garrafa PET'                                   => 'I01 - Pluviômetro de Garrafa PET',
+				'I02 - Anemometro de Copos'                                          => 'I02 - Anemômetro de Copos',
+				'I03 - Barometro de Bexiga'                                          => 'I03 - Barômetro de Bexiga',
+				'E02 - Mini Ciclo da Agua / Chuva no Pote'                           => 'E02 - Mini Ciclo da Água / Chuva no Pote',
+				'R01 - Registro Pluviometrico Diario'                                => 'R01 - Registro Pluviométrico Diário',
+				'R02 - Monitoramento da Pressao Atmosferica com Escala Milimetrada'  => 'R02 - Monitoramento da Pressão Atmosférica com Escala Milimetrada',
+				'R04 - Mapeamento e Classificacao Visual de Nuvens'                  => 'R04 - Mapeamento e Classificação Visual de Nuvens',
+				'R06 - O Experimento da Amplitude Termica Diaria'                    => 'R06 - O Experimento da Amplitude Térmica Diária',
+				'R07 - Previsao do Tempo do Aluno'                                   => 'R07 - Previsão do Tempo do Aluno',
+			),
+			'groups'  => array(
+				'Turma A – 5o Ano' => array(
+					'name'        => 'Turma A - 5º Ano',
+					'description' => 'Turma do 5º ano com foco em ciências (DADOS FICTÍCIOS)',
+				),
+				'Turma A - 5o Ano' => array(
+					'name'        => 'Turma A - 5º Ano',
+					'description' => 'Turma do 5º ano com foco em ciências (DADOS FICTÍCIOS)',
+				),
+				'Turma B - 6o Ano' => array(
+					'name'        => 'Turma B - 6º Ano',
+					'description' => 'Turma do 6º ano com foco em meio ambiente (DADOS FICTÍCIOS)',
+				),
+			),
+		);
+	}
+
+	/**
+	 * Renomeia dados de demonstracao antigos para a versao com acentos.
+	 * Idempotente: se o titulo novo ja existe, apenas remove/ignora o antigo.
+	 */
+	private function migrate_seed_titles() {
+		$mapa  = self::accent_map();
+		$tipos = array( 'remc_escola', 'remc_local', 'remc_observacao', 'remc_tutorial', 'remc_atividade' );
+		$total = 0;
+
+		foreach ( $mapa['posts'] as $antigo => $novo ) {
+			$antigos = get_posts( array(
+				'post_type'      => $tipos,
+				'post_status'    => 'any',
+				'title'          => $antigo,
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+			) );
+			if ( empty( $antigos ) ) {
+				continue;
+			}
+
+			$id     = (int) $antigos[0];
+			$existe = $this->find_post_by_title( $novo, get_post_type( $id ) );
+			if ( $existe && $existe !== $id ) {
+				wp_delete_post( $id, true );
+			} else {
+				wp_update_post( array( 'ID' => $id, 'post_title' => $novo ) );
+			}
+			$total++;
+		}
+
+		if ( function_exists( 'groups_get_groups' ) ) {
+			$grupos = groups_get_groups( array( 'show_hidden' => true, 'per_page' => false ) );
+			if ( ! empty( $grupos['groups'] ) ) {
+				foreach ( $grupos['groups'] as $g ) {
+					if ( ! isset( $mapa['groups'][ $g->name ] ) ) {
+						continue;
+					}
+					$novo = $mapa['groups'][ $g->name ];
+					if ( function_exists( 'groups_edit_base_group_details' ) ) {
+						groups_edit_base_group_details( array(
+							'group_id'    => $g->id,
+							'name'        => $novo['name'],
+							'description' => $novo['description'],
+							'notify_members' => false,
+						) );
+						$total++;
+					}
+				}
+			}
+		}
+
+		if ( $total ) {
+			WP_CLI::success( "Titulos normalizados (acentuacao): {$total}." );
+		}
+	}
+
+	/**
+	 * Regenera o texto publico ja gravado nos itens do feed, para que a
+	 * acentuacao acompanhe as observacoes atuais.
+	 */
+	private function refresh_feed_content() {
+		if ( ! class_exists( 'Remc_Activity' ) ) {
+			return;
+		}
+
+		global $wpdb;
+		$tabela = $wpdb->prefix . 'bp_activity';
+		$itens  = $wpdb->get_results( "SELECT id, item_id FROM {$tabela} WHERE component = 'remc'" );
+		$total  = 0;
+		$limpos = 0;
+
+		foreach ( $itens as $item ) {
+			$obs      = get_post( (int) $item->item_id );
+			$aprovado = $obs && 'publish' === $obs->post_status && 'aprovado' === get_post_meta( $obs->ID, '_status', true );
+
+			if ( ! $aprovado ) {
+				if ( function_exists( 'bp_activity_delete_by_item_id' ) ) {
+					bp_activity_delete_by_item_id( array(
+						'item_id'   => (int) $item->item_id,
+						'component' => 'remc',
+						'type'      => 'remc_shared_observation',
+					) );
+				}
+				delete_post_meta( (int) $item->item_id, '_shared_activity_id' );
+				$limpos++;
+				continue;
+			}
+
+			$conteudo = Remc_Activity::build_public_content( (int) $item->item_id );
+			if ( '' === $conteudo ) {
+				continue;
+			}
+			$wpdb->update( $tabela, array( 'content' => $conteudo ), array( 'id' => (int) $item->id ) );
+			$total++;
+		}
+
+		if ( $total ) {
+			WP_CLI::success( "Texto do feed atualizado: {$total}." );
+		}
+		if ( $limpos ) {
+			WP_CLI::success( "Itens fora de aprovacao removidos do feed: {$limpos}." );
+		}
+	}
+
+	/**
 	 * Remove os dados de demonstracao criados por este comando.
 	 */
 	private function delete_demo_data() {
@@ -809,7 +984,9 @@ class Remc_Bootstrap_Command {
 				'fields'         => 'ids',
 			) );
 			foreach ( $ids as $id ) {
-				if ( false !== strpos( (string) get_the_title( $id ), '(DADOS FICTICIOS)' ) || 'remc_tutorial' === $tipo ) {
+				$titulo = (string) get_the_title( $id );
+				$fake   = ( false !== strpos( $titulo, '(DADOS FICTICIOS)' ) || false !== strpos( $titulo, '(DADOS FICTÍCIOS)' ) );
+				if ( $fake || 'remc_tutorial' === $tipo ) {
 					wp_delete_post( $id, true );
 				}
 			}
