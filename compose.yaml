@@ -1,0 +1,83 @@
+﻿services:
+  mariadb:
+    image: mariadb:10.6.16
+    container_name: remc-mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${WP_DB_NAME}
+      MARIADB_USER: ${WP_DB_USER}
+      MARIADB_PASSWORD: ${WP_DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${WP_DB_ROOT_PASSWORD:-rootpass}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - remc_network
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  wp:
+    image: wordpress:6.4.3-php8.1
+    container_name: remc-wp
+    restart: unless-stopped
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      WORDPRESS_DB_NAME: ${WP_DB_NAME}
+      WORDPRESS_DB_USER: ${WP_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD}
+      WORDPRESS_DB_HOST: ${WP_DB_HOST}
+      WORDPRESS_TABLE_PREFIX: ${WP_TABLE_PREFIX}
+      WORDPRESS_DEBUG: ${WP_DEBUG}
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_SITEURL', '${WP_SITEURL}');
+        define('WP_HOME', '${WP_HOME}');
+        define('DISABLE_WP_CRON', true);
+        define('AUTOMATIC_UPDATER_DISABLED', true);
+        define('WP_AUTO_UPDATE_CORE', false);
+        define('DISALLOW_FILE_EDIT', true);
+    volumes:
+      - wp_data:/var/www/html
+      - ./wp-content/plugins:/var/www/html/wp-content/plugins
+      - ./wp-content/themes:/var/www/html/wp-content/themes
+    ports:
+      - "127.0.0.1:80:80"
+    networks:
+      - remc_network
+
+  wpcli:
+    image: wordpress:cli-php8.1
+    container_name: remc-wpcli
+    restart: "no"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      wp:
+        condition: service_started
+    user: "33:33"
+    environment:
+      WORDPRESS_DB_NAME: ${WP_DB_NAME}
+      WORDPRESS_DB_USER: ${WP_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD}
+      WORDPRESS_DB_HOST: ${WP_DB_HOST}
+      WORDPRESS_TABLE_PREFIX: ${WP_TABLE_PREFIX}
+    volumes:
+      - wp_data:/var/www/html
+      - ./wp-content/plugins:/var/www/html/wp-content/plugins
+      - ./wp-content/themes:/var/www/html/wp-content/themes
+    entrypoint: ["wp"]
+    command: ["--info"]
+    networks:
+      - remc_network
+
+volumes:
+  mariadb_data:
+  wp_data:
+
+networks:
+  remc_network:
+    driver: bridge
+

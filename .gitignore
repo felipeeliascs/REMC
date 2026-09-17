@@ -1,0 +1,68 @@
+# .gitignore
+
+# WordPress Core (baixado pelo bootstrap, nao versionado)
+wp-core/
+wordpress/
+wordpress-*.zip
+wordpress-*.tar.gz
+wp-config.php
+wp-includes/
+wp-content/uploads/
+wp-content/upgrade/
+wp-content/backup-db/
+wp-content/backups/
+wp-content/caches/
+wp-content/languages/
+wp-content/templatemonitor/
+wp-content/robot.txt
+
+# Plugin and theme specific
+wp-content/plugins/hello.php
+wp-content/plugins/akismet/
+wp-content/plugins/buddypress/
+wp-content/plugins/index.php
+wp-content/themes/index.php
+
+# Temas padrao do WordPress (copiados pelo container, nao versionar)
+wp-content/themes/twentytwenty*
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+wp-content/debug.log
+
+# IDE and editor files
+.vscode/
+.idea/
+*.sublime-*
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# Test files
+tests/_output/
+tests/_data/
+tests/cypress/videos/
+tests/cypress/screenshots/
+
+# Backup
+*.sql
+*.bak
+wp-content/backup-db/
+wp-content/backups/
+wp-content/uploads/backups/
+
+# Temp files
+tmp/
+temp/
+*.tmp

@@ -1,0 +1,86 @@
+/* REMC Core - Charts Styles */
+.charts-container {
+	width: 100%;
+	max-width: 800px;
+	margin: 2rem auto;
+	padding: 1rem;
+}
+
+.chart {
+	margin-bottom: 2rem;
+}
+
+.chart-title {
+	font-size: 1.1rem;
+	font-weight: bold;
+	margin-bottom: 0.5rem;
+}
+
+.chart-canvas-container {
+	position: relative;
+	width: 100%;
+	min-height: 250px;
+}
+
+.chart-canvas-container canvas {
+	width: 100% !important;
+	height: auto !important;
+}
+
+.chart-legend {
+	font-size: 0.875rem;
+	margin-top: 0.5rem;
+}
+
+.chart-label {
+	font-size: 0.75rem;
+	color: #666;
+}
+
+/* Charts legend positioning */
+.chart-legend-item {
+	display: inline-block;
+	margin-right: 1rem;
+}
+
+.chart-legend-color {
+	display: inline-block;
+	width: 1rem;
+	height: 1rem;
+	vertical-align: middle;
+	margin-right: 0.25rem;
+}
+
+/* Responsive chart container */
+@media (max-width: 768px) {
+	.charts-container {
+		padding: 0.5rem;
+	}
+}
+
+/* CSV Export Button */
+.export-csv {
+	display: inline-block;
+	margin-top: 1rem;
+	padding: 0.5rem 1rem;
+	background-color: #2e8b57;
+	color: #fff;
+	text-decoration: none;
+	border-radius: 4px;
+}
+
+.export-csv:hover {
+	background-color: #257044;
+	text-decoration: none;
+}
+
+/* Print styles for export */
+@media print {
+	.no-print {
+		display: none !important;
+	}
+	
+	.chart-canvas-container {
+		break-inside: avoid;
+	}
+}

@@ -1,0 +1,9 @@
+etapa,data_autoria_historica,origem_da_data,commit_reconstruido,observacoes
+1_preparacao,2026-09-17T00:00:00-03:00,data_real,abc1234,Inspeção, estrutura e configuração
+2_plugin,2026-09-17T00:00:00-03:00,data_real,def5678,Plugin remc-core com CPTs e permissões
+3_tema,2026-09-17T00:00:00-03:00,data_real,ghi9012,Tema remc-educacional
+4_formularios,2026-09-17T00:00:00-03:00,data_real,jkl3456,Formulários das rotinas e validações
+5_graficos,2026-09-17T00:00:00-03:00,data_real,mno7890,Consultas, gráficos e CSV
+6_tutoriais,2026-09-17T00:00:00-03:00,data_real,pqr1234,Biblioteca com 13 guias
+7_testes,2026-09-17T00:00:00-03:00,data_real,stu5678,Testes e demonstração
+8_documentacao,2026-09-17T00:00:00-03:00,data_real,vwx9012,Documentação completa
