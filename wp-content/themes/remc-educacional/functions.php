@@ -379,11 +379,12 @@ function remc_share_panel( $args = array() ) {
 					<?php endif; ?>
 				</p>
 			<?php elseif ( $shared ) : ?>
-				<p><span class="badge badge-approved"><?php esc_html_e( 'Compartilhado no feed', 'remc-educacional' ); ?></span></p>
 				<p>
-					<a class="button button-secondary"
-						href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=remc_unshare_observation&observation=' . $obs->ID ), 'remc_unshare_observation_' . $obs->ID ) ); ?>">
-						<?php esc_html_e( 'Remover do feed', 'remc-educacional' ); ?>
+					<a class="button remc-shared"
+						href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=remc_unshare_observation&observation=' . $obs->ID ), 'remc_unshare_observation_' . $obs->ID ) ); ?>"
+						aria-label="<?php esc_attr_e( 'Remover esta observação do feed da comunidade', 'remc-educacional' ); ?>">
+						<span aria-hidden="true">✓</span>
+						<?php esc_html_e( 'Compartilhado no feed — remover', 'remc-educacional' ); ?>
 					</a>
 				</p>
 			<?php else : ?>

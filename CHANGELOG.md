@@ -1,5 +1,22 @@
 # CHANGELOG.md
 
+## [0.4.4] — 2026-09-17 — Estado "compartilhado" vira controle clicável
+
+### Corrigido
+- O estado compartilhado era exibido como **selo** (`<span class="badge">`)
+  verde, "Compartilhado no feed", que parecia um botão mas **não era
+  clicável** — a ação real ficava num botão separado abaixo. Agora há **um
+  único controle clicável**: `✓ Compartilhado no feed — remover`, um link
+  verde com `aria-label`
+  "Remover esta observação do feed da comunidade". Quando não está
+  compartilhado, permanece o botão "Compartilhar no feed".
+
+### Verificado (HTTP real, login como aluno)
+- Clique único: feed 1 → 0 (remover) e 0 → 1 (compartilhar).
+- O selo não clicável (`badge-approved`) não é mais usado para o estado de
+  compartilhamento; o controle tem classe `remc-shared` e cursor de link.
+- `debug.log` limpo; `/`, `/activity/` e `/painel-do-aluno/` em 200.
+
 ## [0.4.3] — 2026-09-17 — Feedback do compartilhamento e correção do menu
 
 ### Corrigido

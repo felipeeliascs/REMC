@@ -169,6 +169,17 @@ th {
 	background-color: #5a6268;
 }
 
+/* Estado "compartilhado": controle clicável, verde, com ação explícita */
+.button.remc-shared {
+	background-color: var(--remc-green);
+	color: #fff;
+}
+
+.button.remc-shared:hover {
+	background-color: #257044;
+	color: #fff;
+}
+
 /* Status badges */
 .badge {
 	display: inline-block;
