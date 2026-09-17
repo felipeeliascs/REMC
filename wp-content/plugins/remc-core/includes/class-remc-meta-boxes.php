@@ -22,6 +22,71 @@ class Remc_Meta_Boxes {
 		add_action( 'save_post', array( $this, 'save_meta_boxes' ), 10, 2 );
 	}
 
+	/**
+	 * Turmas em que o usuario atual pode registrar dados.
+	 *
+	 * @return object[] Objetos de grupo do BuddyPress.
+	 */
+	private function allowed_turmas() {
+		if ( ! function_exists( 'groups_get_groups' ) ) {
+			return array();
+		}
+
+		$user_id = get_current_user_id();
+
+		if ( current_user_can( 'manage_options' ) ) {
+			$grupos = groups_get_groups( array(
+				'show_hidden' => true,
+				'per_page'    => false,
+			) );
+			return ! empty( $grupos['groups'] ) ? $grupos['groups'] : array();
+		}
+
+		$roles = (array) wp_get_current_user()->roles;
+
+		if ( in_array( 'professor', $roles, true ) ) {
+			$ids = Remc_Roles_Capabilities::instance()->managed_turmas( $user_id );
+		} else {
+			$ids = array_map( 'intval', (array) get_user_meta( $user_id, '_linked_turmas', true ) );
+		}
+
+		$out = array();
+		foreach ( array_unique( $ids ) as $id ) {
+			if ( ! $id ) {
+				continue;
+			}
+			$g = groups_get_group( array( 'group_id' => $id ) );
+			if ( ! empty( $g->id ) ) {
+				$out[] = $g;
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Locais pertencentes as turmas informadas.
+	 */
+	private function locals_for_turmas( $turma_ids ) {
+		$turma_ids = array_filter( array_map( 'intval', (array) $turma_ids ) );
+		if ( empty( $turma_ids ) ) {
+			return array();
+		}
+
+		return get_posts( array(
+			'post_type'      => 'remc_local',
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'meta_query'     => array(
+				array(
+					'key'     => '_turma',
+					'value'   => $turma_ids,
+					'compare' => 'IN',
+				),
+			),
+		) );
+	}
+
 	public function register_meta_boxes() {
 		// Observação
 		add_meta_box(
@@ -63,21 +128,12 @@ class Remc_Meta_Boxes {
 			<label for="remc_observation_turma">Turma</label>
 			<select id="remc_observation_turma" name="remc_observation_turma" class="form-select" required>
 				<option value="">Selecionar turma</option>
-				<?php
-				$turmas = get_posts( array(
-					'post_type' => 'group',
-					'post_status' => 'publish',
-					'posts_per_page' => -1,
-				) );
-				foreach ( $turmas as $turma ) :
-					?>
-					<option value="<?php echo esc_attr( $turma->ID ); ?>" 
-						<?php selected( $turma_id, $turma->ID ); ?>>
-						<?php echo esc_html( $turma->post_title ); ?>
+				<?php foreach ( $this->allowed_turmas() as $turma ) : ?>
+					<option value="<?php echo esc_attr( $turma->id ); ?>"
+						<?php selected( (int) $turma_id, (int) $turma->id ); ?>>
+						<?php echo esc_html( $turma->name ); ?>
 					</option>
-					<?php
-				endforeach;
-				?>
+				<?php endforeach; ?>
 			</select>
 		</div>
 		
@@ -86,15 +142,11 @@ class Remc_Meta_Boxes {
 			<select id="remc_observation_local" name="remc_observation_local" class="form-select" required>
 				<option value="">Selecionar local</option>
 				<?php
-				$locals = get_posts( array(
-					'post_type' => 'remc_local',
-					'post_status' => 'publish',
-					'posts_per_page' => -1,
-				) );
-				foreach ( $locals as $local ) :
+				$turma_ids = wp_list_pluck( $this->allowed_turmas(), 'id' );
+				foreach ( $this->locals_for_turmas( $turma_ids ) as $local ) :
 					?>
-					<option value="<?php echo esc_attr( $local->ID ); ?>" 
-						<?php selected( $local_id, $local->ID ); ?>>
+					<option value="<?php echo esc_attr( $local->ID ); ?>"
+						<?php selected( (int) $local_id, (int) $local->ID ); ?>>
 						<?php echo esc_html( $local->post_title ); ?>
 					</option>
 					<?php
@@ -131,21 +183,12 @@ class Remc_Meta_Boxes {
 			<label for="remc_activity_turma">Turma</label>
 			<select id="remc_activity_turma" name="remc_activity_turma" class="form-select" required>
 				<option value="">Selecionar turma</option>
-				<?php
-				$turmas = get_posts( array(
-					'post_type' => 'group',
-					'post_status' => 'publish',
-					'posts_per_page' => -1,
-				) );
-				foreach ( $turmas as $turma ) :
-					?>
-					<option value="<?php echo esc_attr( $turma->ID ); ?>" 
-						<?php selected( $turma_id, $turma->ID ); ?>>
-						<?php echo esc_html( $turma->post_title ); ?>
+				<?php foreach ( $this->allowed_turmas() as $turma ) : ?>
+					<option value="<?php echo esc_attr( $turma->id ); ?>"
+						<?php selected( (int) $turma_id, (int) $turma->id ); ?>>
+						<?php echo esc_html( $turma->name ); ?>
 					</option>
-					<?php
-				endforeach;
-				?>
+				<?php endforeach; ?>
 			</select>
 		</div>
 		

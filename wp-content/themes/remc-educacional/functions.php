@@ -122,8 +122,7 @@ endif;
 /**
  * Get user turmas
  */
-function remc_get_user_turmas( $user_id = null ) {
-	if ( ! $user_id ) {
+function remc_get_user_turmas( $user_id = null ) {	if ( ! $user_id ) {
 		$user_id = get_current_user_id();
 	}
 	
@@ -176,3 +175,107 @@ function remc_entry_meta() {
 	
 	echo '</div>';
 }
+
+/**
+ * URL do perfil de um membro (compatível com BuddyPress 12+).
+ */
+function remc_member_url( $user_id = 0 ) {
+	$user_id = $user_id ? $user_id : get_current_user_id();
+	if ( ! $user_id ) {
+		return '';
+	}
+	if ( function_exists( 'bp_members_get_user_url' ) ) {
+		return bp_members_get_user_url( $user_id );
+	}
+	if ( function_exists( 'bp_core_get_user_domain' ) ) {
+		return bp_core_get_user_domain( $user_id );
+	}
+	return get_author_posts_url( $user_id );
+}
+
+/**
+ * Resolve itens dinâmicos do menu principal e oculta o que não se aplica.
+ *
+ * Itens com URL "#remc-<regra>" são resolvidos aqui:
+ *   #remc-minha-timeline  -> /members/<login>/activity/  (só logado)
+ *   #remc-meu-perfil      -> /members/<login>/            (só logado)
+ *   #remc-painel-aluno    -> visível para aluno/professor/admin
+ *   #remc-painel-professor-> visível para professor/admin
+ *   #remc-logado          -> visível para qualquer usuário logado
+ */
+function remc_filter_nav_menu_objects( $items, $args = null ) {
+	if ( is_admin() ) {
+		return $items;
+	}
+
+	$logged_in = is_user_logged_in();
+	$user      = wp_get_current_user();
+	$roles     = (array) $user->roles;
+	$is_prof   = $logged_in && ( in_array( 'professor', $roles, true ) || in_array( 'administrator', $roles, true ) );
+	$is_aluno  = $logged_in && in_array( 'aluno', $roles, true );
+
+	$member_url = $logged_in ? remc_member_url( $user->ID ) : '';
+
+	$keep = array();
+	foreach ( $items as $item ) {
+		if ( 0 !== strpos( (string) $item->url, '#remc-' ) ) {
+			$keep[] = $item;
+			continue;
+		}
+
+		$rule = substr( $item->url, strlen( '#remc-' ) );
+
+		switch ( $rule ) {
+			case 'minha-timeline':
+				if ( ! $logged_in || ! $member_url ) {
+					continue 2;
+				}
+				$item->url = trailingslashit( $member_url ) . 'activity/';
+				break;
+
+			case 'meu-perfil':
+				if ( ! $logged_in || ! $member_url ) {
+					continue 2;
+				}
+				$item->url = $member_url;
+				break;
+
+			case 'painel-aluno':
+				if ( ! $is_aluno && ! $is_prof ) {
+					continue 2;
+				}
+				$url = get_option( 'remc_pagina_painel_aluno' );
+				if ( ! $url ) {
+					continue 2;
+				}
+				$item->url = $url;
+				break;
+
+			case 'painel-professor':
+				if ( ! $is_prof ) {
+					continue 2;
+				}
+				$url = get_option( 'remc_pagina_painel_professor' );
+				if ( ! $url ) {
+					continue 2;
+				}
+				$item->url = $url;
+				break;
+
+			case 'logado':
+				if ( ! $logged_in ) {
+					continue 2;
+				}
+				$item->url = admin_url();
+				break;
+
+			default:
+				continue 2;
+		}
+
+		$keep[] = $item;
+	}
+
+	return $keep;
+}
+add_filter( 'wp_nav_menu_objects', 'remc_filter_nav_menu_objects', 10, 2 );

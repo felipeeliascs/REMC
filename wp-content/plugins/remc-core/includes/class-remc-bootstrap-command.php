@@ -62,6 +62,11 @@ class Remc_Bootstrap_Command {
 		$this->ensure_feed_demo();
 		$this->ensure_tutorials();
 		$this->ensure_activities();
+		$this->ensure_pages();
+		$this->ensure_main_menu();
+
+		// Necessario apos registrar o arquivo de tutoriais e criar paginas.
+		flush_rewrite_rules();
 
 		WP_CLI::success( 'Bootstrap da REMC concluido (dados ficticios).' );
 	}
@@ -72,6 +77,17 @@ class Remc_Bootstrap_Command {
 
 	private function buddypress_ready() {
 		return function_exists( 'groups_create_group' ) && function_exists( 'groups_get_id' );
+	}
+
+	/**
+	 * Garante que o usuario tenha o papel do projeto (idempotente).
+	 */
+	private function ensure_role( $user, $role ) {
+		$u = new WP_User( $user->ID );
+		if ( ! in_array( $role, (array) $u->roles, true ) ) {
+			$u->set_role( $role );
+			WP_CLI::success( "Papel '{$role}' atribuido a {$u->user_login}." );
+		}
 	}
 
 	/**
@@ -143,6 +159,8 @@ class Remc_Bootstrap_Command {
 	private function ensure_professor( $login, $display, $escola_id ) {
 		$user = get_user_by( 'login', $login );
 		if ( $user ) {
+			$this->ensure_role( $user, 'professor' );
+			update_user_meta( $user->ID, '_linked_escola', $escola_id );
 			WP_CLI::line( "Professor {$login} ja existe, mantendo." );
 			return $user->ID;
 		}
@@ -172,6 +190,7 @@ class Remc_Bootstrap_Command {
 		foreach ( $students as $login => $display ) {
 			$user = get_user_by( 'login', $login );
 			if ( $user ) {
+				$this->ensure_role( $user, 'aluno' );
 				WP_CLI::line( "Aluno {$login} ja existe, mantendo." );
 				$ids[ $login ] = $user->ID;
 				continue;
@@ -412,8 +431,7 @@ class Remc_Bootstrap_Command {
 	/**
 	 * Demonstracao do feed social: compartilha (opt-in simulado) uma observacao
 	 * aprovada de chuva. Idempotente.
-	 */
-	private function ensure_feed_demo() {
+	 */	private function ensure_feed_demo() {
 		if ( ! class_exists( 'Remc_Activity' ) || ! function_exists( 'bp_activity_add' ) ) {
 			WP_CLI::line( 'Feed social indisponivel (BuddyPress/atividade inativos), pulando.' );
 			return;
@@ -589,6 +607,140 @@ class Remc_Bootstrap_Command {
 
 			$this->report( $created, true, "Atividade '{$def['title']}'" );
 		}
+	}
+
+	/**
+	 * Cria as paginas dos paineis (templates do tema), de forma idempotente.
+	 */
+	private function ensure_pages() {
+		$defs = array(
+			'remc_pagina_painel_aluno'     => array(
+				'title'    => 'Painel do Aluno',
+				'template' => 'template-student-dashboard.php',
+			),
+			'remc_pagina_painel_professor' => array(
+				'title'    => 'Painel do Professor',
+				'template' => 'template-teacher-dashboard.php',
+			),
+		);
+
+		foreach ( $defs as $option => $def ) {
+			$id = $this->find_post_by_title( $def['title'], 'page' );
+			if ( ! $id ) {
+				$id = wp_insert_post( array(
+					'post_type'   => 'page',
+					'post_title'  => $def['title'],
+					'post_status' => 'publish',
+					'post_name'   => sanitize_title( $def['title'] ),
+				) );
+				WP_CLI::success( "Pagina '{$def['title']}' criada." );
+			} else {
+				WP_CLI::line( "Pagina '{$def['title']}' ja existe, mantendo." );
+			}
+
+			update_post_meta( $id, '_wp_page_template', $def['template'] );
+			update_option( $option, get_permalink( $id ) );
+		}
+	}
+
+	/**
+	 * URL de um diretorio do BuddyPress, sem chutar o slug.
+	 */
+	private function directory_url( $component ) {
+		$candidatos = array(
+			'activity' => array( 'bp_get_activity_directory_url', 'bp_get_activity_directory_permalink' ),
+			'groups'   => array( 'bp_get_groups_directory_url', 'bp_get_groups_directory_permalink' ),
+			'members'  => array( 'bp_get_members_directory_url', 'bp_get_members_directory_permalink' ),
+		);
+
+		foreach ( $candidatos[ $component ] as $f ) {
+			if ( function_exists( $f ) ) {
+				return (string) call_user_func( $f );
+			}
+		}
+		return '';
+	}
+
+	/**
+	 * Cria/reconcilia o menu principal e o associa a localizacao "main" do tema.
+	 * Idempotente: atualiza apenas os itens que divergem.
+	 */
+	private function ensure_main_menu() {
+		$menu_name = 'REMC - Menu Principal';
+		$menu      = wp_get_nav_menu_object( $menu_name );
+
+		if ( ! $menu ) {
+			$menu_id = wp_create_nav_menu( $menu_name );
+			if ( is_wp_error( $menu_id ) ) {
+				WP_CLI::warning( 'Nao foi possivel criar o menu principal.' );
+				return;
+			}
+			WP_CLI::success( "Menu '{$menu_name}' criado." );
+		} else {
+			$menu_id = (int) $menu->term_id;
+			WP_CLI::line( "Menu '{$menu_name}' ja existe, reconciliando itens." );
+		}
+
+		$tutoriais = get_post_type_archive_link( 'remc_tutorial' );
+		$timeline  = $this->directory_url( 'activity' );
+		$turmas    = $this->directory_url( 'groups' );
+
+		$desejados = array(
+			'Início'             => home_url( '/' ),
+			'Timeline'           => $timeline ? $timeline : home_url( '/activity/' ),
+			'Minha timeline'     => '#remc-minha-timeline',
+			'Turmas'             => $turmas ? $turmas : home_url( '/grupos/' ),
+			'Tutoriais'          => $tutoriais ? $tutoriais : home_url( '/tutoriais/' ),
+			'Meu perfil'         => '#remc-meu-perfil',
+			'Painel do Aluno'    => '#remc-painel-aluno',
+			'Painel do Professor' => '#remc-painel-professor',
+			'Área de trabalho'   => '#remc-logado',
+		);
+
+		$existentes = array();
+		foreach ( (array) wp_get_nav_menu_items( $menu_id ) as $item ) {
+			$existentes[ $item->title ] = $item;
+		}
+
+		$position = 1;
+		$criados  = 0;
+		$ajustes  = 0;
+
+		foreach ( $desejados as $titulo => $url ) {
+			if ( isset( $existentes[ $titulo ] ) ) {
+				$item = $existentes[ $titulo ];
+				if ( $item->url !== $url ) {
+					wp_update_nav_menu_item( $menu_id, $item->ID, array(
+						'menu-item-title'  => $titulo,
+						'menu-item-url'    => $url,
+						'menu-item-status' => 'publish',
+						'menu-item-type'   => 'custom',
+					) );
+					$ajustes++;
+				}
+			} else {
+				wp_update_nav_menu_item( $menu_id, 0, array(
+					'menu-item-title'    => $titulo,
+					'menu-item-url'      => $url,
+					'menu-item-status'   => 'publish',
+					'menu-item-type'     => 'custom',
+					'menu-item-position' => $position,
+				) );
+				$criados++;
+			}
+			$position++;
+		}
+
+		if ( $criados ) {
+			WP_CLI::success( "Itens do menu criados: {$criados}." );
+		}
+		if ( $ajustes ) {
+			WP_CLI::success( "Itens do menu ajustados: {$ajustes}." );
+		}
+
+		$locations         = (array) get_theme_mod( 'nav_menu_locations', array() );
+		$locations['main'] = $menu_id;
+		set_theme_mod( 'nav_menu_locations', $locations );
 	}
 
 	/**

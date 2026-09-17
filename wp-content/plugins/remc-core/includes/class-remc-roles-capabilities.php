@@ -1,6 +1,10 @@
 <?php
 /**
- * REMC Core - Roles and Capabilities
+ * REMC Core - Papeis, capabilities e autorizacao por objeto.
+ *
+ * A autorizacao por objeto e feita no filtro "map_meta_cap": quando o vinculo
+ * com a escola/turma nao confere, devolvemos "do_not_allow", que e a forma
+ * canonica de negar acesso a um objeto especifico no WordPress.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -20,279 +24,313 @@ class Remc_Roles_Capabilities {
 	private function __construct() {
 		add_action( 'init', array( $this, 'register_caps' ) );
 		add_action( 'add_meta_boxes', array( $this, 'remove_meta_boxes' ) );
-		add_filter( 'user_has_cap', array( $this, 'filter_user_caps' ), 10, 4 );
+		add_filter( 'map_meta_cap', array( $this, 'map_meta_cap' ), 10, 4 );
+		add_action( 'save_post_remc_observacao', array( $this, 'validate_observation_scope' ), 10, 2 );
+		add_action( 'save_post_remc_atividade', array( $this, 'validate_activity_scope' ), 10, 2 );
 	}
 
+	/* ------------------------------------------------------------------ */
+	/* Papeis e capabilities                                               */
+	/* ------------------------------------------------------------------ */
+
 	public function register_caps() {
-		// Define custom capabilities
 		$caps = array(
-			// Schools
 			'read_escola', 'edit_escola', 'delete_escola', 'create_escola',
-			// Local observation points
 			'read_local', 'edit_local', 'delete_local', 'create_local',
-			// Observations
 			'read_observacao', 'edit_observacao', 'delete_observacao', 'create_observacao',
-			// Publish observations
-			'publish_observacao',
-			// Approve observations
-			'approve_observacao',
-			// Tutorials
+			'publish_observacao', 'approve_observacao',
 			'read_tutorial', 'edit_tutorial', 'delete_tutorial', 'create_tutorial',
 			'publish_tutorial', 'edit_others_tutorials', 'delete_others_tutorials',
-			// Activities
 			'read_atividade', 'edit_atividade', 'delete_atividade', 'create_atividade',
-			// Export data
-			'export_data',
-			// Manage schools
-			'manage_escolas',
-			// Manage turmas (groups)
-			'manage_turmas',
-			// Manage students
-			'manage_alunos',
-			// Reset passwords
+			'export_data', 'manage_escolas', 'manage_turmas', 'manage_alunos',
 			'reset_student_password',
 		);
 
-		$roles = array(
-			'administrator' => array(
-				'read' => true,
-				'create_escolas' => true,
-				'edit_escolas' => true,
-				'delete_escolas' => true,
-				'manage_escolas' => true,
-				'manage_turmas' => true,
-				'manage_alunos' => true,
-				'reset_student_password' => true,
-			),
-			'professor' => array(
-				'read' => true,
-				'read_escola' => true,
-				'edit_escola' => true,
-				'read_local' => true,
-				'edit_local' => true,
-				'create_local' => true,
-				'read_observacao' => true,
-				'edit_observacao' => true,
-				'create_observacao' => true,
-				'publish_observacao' => true,
-				'approve_observacao' => true,
-				'read_atividade' => true,
-				'edit_atividade' => true,
-				'create_atividade' => true,
-				'export_data' => true,
-			),
-			'aluno' => array(
-				'read' => true,
-				'read_observacao' => true,
-				'edit_observacao' => true,
-				'create_observacao' => true,
-				'read_atividade' => true,
-				'edit_atividade' => true,
-				'create_atividade' => true,
-			),
-			'visitante' => array(
-				'read' => true,
-				'read_tutorial' => true,
-			),
+		$plurais = array(
+			'edit_locais', 'delete_locais', 'edit_published_locais', 'delete_published_locais',
+			'edit_escolas', 'delete_escolas', 'edit_published_escolas', 'delete_published_escolas',
+			'edit_observacoes', 'delete_observacoes', 'edit_others_observacoes',
+			'delete_others_observacoes', 'read_private_observacoes',
+			'edit_published_observacoes', 'delete_published_observacoes',
+			'edit_tutoriais', 'delete_tutoriais', 'edit_others_tutoriais',
+			'publish_tutoriais', 'read_private_tutoriais',
+			'edit_published_tutoriais', 'delete_published_tutoriais',
+			'edit_atividades', 'delete_atividades', 'edit_others_atividades',
+			'read_private_atividades',
+			'edit_published_atividades', 'delete_published_atividades',
 		);
 
-		// Add capabilities to roles
-		foreach ( $roles as $role_name => $role_caps ) {
+		$cap_concedidas = array(
+			'administrator' => array_merge( $caps, $plurais, array( 'read' ) ),
+			'professor'     => array(
+				'read',
+				'read_escola', 'edit_escola', 'edit_escolas',
+				'read_local', 'create_local', 'edit_local', 'edit_locais',
+				'read_observacao', 'create_observacao', 'edit_observacao', 'delete_observacao',
+				'edit_observacoes', 'edit_others_observacoes', 'edit_published_observacoes',
+				'read_private_observacoes', 'publish_observacao', 'approve_observacao',
+				'read_atividade', 'create_atividade', 'edit_atividade',
+				'read_tutorial', 'create_tutorial', 'edit_tutorial', 'edit_tutoriais', 'publish_tutorial',
+				'export_data',
+			),
+			'aluno'         => array(
+				'read',
+				'read_escola', 'read_local',
+				'read_observacao', 'create_observacao', 'edit_observacao', 'delete_observacao',
+				'edit_observacoes', 'edit_published_observacoes',
+				'read_atividade', 'create_atividade', 'edit_atividade', 'delete_atividade',
+				'edit_atividades',
+				'read_tutorial',
+			),
+			'visitante'     => array( 'read', 'read_tutorial' ),
+		);
+
+		$rotulos = array(
+			'professor' => __( 'Professor REMC', 'remc-core' ),
+			'aluno'     => __( 'Aluno REMC', 'remc-core' ),
+			'visitante' => __( 'Visitante REMC', 'remc-core' ),
+		);
+
+		foreach ( $cap_concedidas as $role_name => $role_caps ) {
 			$role = get_role( $role_name );
-			if ( $role ) {
-				foreach ( $role_caps as $cap => $grant ) {
-					if ( $grant ) {
-						$role->add_cap( $cap );
-					}
+
+			if ( ! $role && isset( $rotulos[ $role_name ] ) ) {
+				add_role( $role_name, $rotulos[ $role_name ], array( 'read' => true ) );
+				$role = get_role( $role_name );
+			}
+
+			if ( ! $role ) {
+				continue;
+			}
+
+			foreach ( array_unique( $role_caps ) as $cap ) {
+				if ( ! $role->has_cap( $cap ) ) {
+					$role->add_cap( $cap );
+				}
+			}
+		}
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* Vinculos com escola e turma                                         */
+	/* ------------------------------------------------------------------ */
+
+	/**
+	 * Turmas pelas quais o usuario e responsavel (professor).
+	 *
+	 * @return int[]
+	 */
+	public function managed_turmas( $user_id ) {
+		$turmas = (array) get_user_meta( $user_id, '_linked_turmas', true );
+		$turmas = array_filter( array_map( 'intval', $turmas ) );
+
+		if ( function_exists( 'groups_get_groups' ) ) {
+			$grupos = groups_get_groups( array(
+				'user_id'       => $user_id,
+				'show_hidden'   => true,
+				'per_page'      => false,
+				'meta_query'    => array(
+					array(
+						'key'   => 'professor_responsavel',
+						'value' => (int) $user_id,
+					),
+				),
+			) );
+			if ( ! empty( $grupos['groups'] ) ) {
+				foreach ( $grupos['groups'] as $g ) {
+					$turmas[] = (int) $g->id;
 				}
 			}
 		}
 
-		// Register caps for mapping
-		global $wp_roles;
-		if ( ! isset( $wp_roles->role_objects['administrator'] ) ) {
-			return;
-		}
-
-		$caps_obj = array();
-		foreach ( $caps as $cap ) {
-			$caps_obj[ $cap ] = true;
-		}
+		return array_values( array_unique( $turmas ) );
 	}
 
-	public function remove_meta_boxes() {
-		// Remove author meta box for non-admins on observations
-		if ( ! current_user_can( 'administrator' ) && current_user_can( 'edit_observacao' ) ) {
-			remove_meta_box( 'authordiv', 'remc_observacao', 'normal' );
+	public function user_manages_turma( $user_id, $turma_id ) {
+		if ( ! $user_id || ! $turma_id ) {
+			return false;
 		}
+		return in_array( (int) $turma_id, $this->managed_turmas( $user_id ), true );
+	}
+
+	public function user_in_turma( $user_id, $turma_id ) {
+		if ( ! $user_id || ! $turma_id || ! function_exists( 'groups_is_user_member' ) ) {
+			return false;
+		}
+		if ( groups_is_user_member( $user_id, (int) $turma_id ) ) {
+			return true;
+		}
+		$turmas = (array) get_user_meta( $user_id, '_linked_turmas', true );
+		return in_array( (int) $turma_id, array_map( 'intval', $turmas ), true );
+	}
+
+	public function is_admin( $user_id ) {
+		return user_can( $user_id, 'manage_options' );
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* Autorizacao por objeto                                              */
+	/* ------------------------------------------------------------------ */
+
+	public function map_meta_cap( $caps, $cap, $user_id, $args ) {
+		if ( ! in_array( $cap, array( 'edit_post', 'read_post', 'delete_post' ), true ) ) {
+			return $caps;
+		}
+		if ( empty( $args[0] ) ) {
+			return $caps;
+		}
+
+		$post = get_post( $args[0] );
+		if ( ! $post ) {
+			return $caps;
+		}
+
+		switch ( $post->post_type ) {
+			case 'remc_observacao':
+				return $this->can_access_observation( $caps, $cap, $user_id, $post );
+			case 'remc_atividade':
+				return $this->can_access_atividade( $caps, $cap, $user_id, $post );
+			case 'remc_local':
+				return $this->can_access_local( $caps, $cap, $user_id, $post );
+			case 'remc_escola':
+				return $this->can_access_escola( $caps, $cap, $user_id, $post );
+		}
+
+		return $caps;
+	}
+
+	private function can_access_observation( $caps, $cap, $user_id, $post ) {
+		if ( $this->is_admin( $user_id ) ) {
+			return $caps;
+		}
+
+		$author = (int) $post->post_author;
+		$turma  = (int) get_post_meta( $post->ID, '_turma', true );
+		$status = (string) get_post_meta( $post->ID, '_status', true );
+		$aberto = in_array( $status, array( '', 'rascunho', 'devolvido' ), true );
+
+		// Autoria: le sempre; edita/apaga apenas enquanto nao aprovada.
+		if ( $user_id === $author ) {
+			if ( 'read_post' === $cap ) {
+				return $caps;
+			}
+			return $aberto ? $caps : array( 'do_not_allow' );
+		}
+
+		// Professor responsavel pela turma: le e revisa.
+		if ( $this->user_manages_turma( $user_id, $turma ) ) {
+			if ( in_array( $cap, array( 'read_post', 'edit_post' ), true ) ) {
+				return $caps;
+			}
+			return array( 'do_not_allow' ); // apagar observacao: somente administrador
+		}
+
+		// Colega de turma: le apenas o que esta aprovado.
+		if ( 'read_post' === $cap && $this->user_in_turma( $user_id, $turma ) ) {
+			return ( 'publish' === $post->post_status && 'aprovado' === $status ) ? $caps : array( 'do_not_allow' );
+		}
+
+		return array( 'do_not_allow' );
+	}
+
+	private function can_access_atividade( $caps, $cap, $user_id, $post ) {
+		if ( $this->is_admin( $user_id ) ) {
+			return $caps;
+		}
+
+		$author = (int) $post->post_author;
+		$turma  = (int) get_post_meta( $post->ID, '_turma', true );
+
+		if ( $user_id === $author ) {
+			return $caps;
+		}
+
+		if ( $this->user_manages_turma( $user_id, $turma ) ) {
+			if ( in_array( $cap, array( 'read_post', 'edit_post' ), true ) ) {
+				return $caps;
+			}
+			return array( 'do_not_allow' );
+		}
+
+		return array( 'do_not_allow' );
+	}
+
+	private function can_access_local( $caps, $cap, $user_id, $post ) {
+		if ( $this->is_admin( $user_id ) ) {
+			return $caps;
+		}
+
+		$turma = (int) get_post_meta( $post->ID, '_turma', true );
+
+		if ( $this->user_manages_turma( $user_id, $turma ) ) {
+			return $caps;
+		}
+
+		if ( 'read_post' === $cap && $this->user_in_turma( $user_id, $turma ) ) {
+			return $caps;
+		}
+
+		return array( 'do_not_allow' );
+	}
+
+	private function can_access_escola( $caps, $cap, $user_id, $post ) {
+		if ( $this->is_admin( $user_id ) ) {
+			return $caps;
+		}
+
+		$escola = (int) get_user_meta( $user_id, '_linked_escola', true );
+		if ( $escola && $escola === (int) $post->ID ) {
+			return $caps;
+		}
+
+		return array( 'do_not_allow' );
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* Validacao do escopo no salvamento                                   */
+	/* ------------------------------------------------------------------ */
+
+	public function validate_observation_scope( $post_id, $post ) {
+		$this->validate_scope( $post_id, $post, '_turma' );
+	}
+
+	public function validate_activity_scope( $post_id, $post ) {
+		$this->validate_scope( $post_id, $post, '_turma' );
 	}
 
 	/**
-	 * Filter capabilities based on object ownership and school assignment
+	 * Impede que alguem vincule um registro a uma turma da qual nao participa.
 	 */
-	public function filter_user_caps( $allcaps, $caps, $args, $user ) {
-		if ( empty( $args ) ) {
-			return $allcaps;
+	private function validate_scope( $post_id, $post, $meta_key ) {
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+			return;
+		}
+		if ( wp_is_post_revision( $post_id ) ) {
+			return;
 		}
 
-		$object_type = '';
-		$object_id = 0;
-
-		// Determine object type and ID from args
-		if ( isset( $args[0] ) ) {
-			$cap = $args[0];
-			if ( in_array( $cap, array( 'edit_post', 'read_post', 'delete_post' ) ) && isset( $args[2] ) ) {
-				$object_id = $args[2];
-				$post = get_post( $object_id );
-				if ( $post ) {
-					$object_type = $post->post_type;
-				}
-			}
+		$turma = (int) get_post_meta( $post_id, $meta_key, true );
+		if ( ! $turma ) {
+			return;
 		}
 
-		// Apply custom logic for REMC post types
-		switch ( $object_type ) {
-			case 'remc_escola':
-				$allcaps = $this->filter_escola_caps( $allcaps, $caps, $args, $user );
-				break;
-			case 'remc_local':
-				$allcaps = $this->filter_local_caps( $allcaps, $caps, $args, $user );
-				break;
-			case 'remc_observacao':
-				$allcaps = $this->filter_observacao_caps( $allcaps, $caps, $args, $user );
-				break;
-			case 'remc_atividade':
-				$allcaps = $this->filter_atividade_caps( $allcaps, $caps, $args, $user );
-				break;
+		$user_id   = get_current_user_id();
+		$is_author = ( (int) $post->post_author === $user_id );
+
+		if ( $this->is_admin( $user_id ) || $this->user_manages_turma( $user_id, $turma ) ) {
+			return;
 		}
 
-		return $allcaps;
+		if ( $is_author && $this->user_in_turma( $user_id, $turma ) ) {
+			return;
+		}
+
+		delete_post_meta( $post_id, $meta_key );
 	}
 
-	private function filter_escola_caps( $allcaps, $caps, $args, $user ) {
-		// Schools are managed by administrators and linked to professors
-		if ( ! empty( $args[2] ) ) {
-			$escola_id = $args[2];
-			$professor_id = get_user_meta( $user->ID, '_linked_escola', true );
-
-			if ( $professor_id && $professor_id === $escola_id ) {
-				$allcaps['edit_escola'] = true;
-				$allcaps['delete_escola'] = true;
-			}
+	public function remove_meta_boxes() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			remove_meta_box( 'authordiv', 'remc_observacao', 'normal' );
 		}
-		return $allcaps;
-	}
-
-	private function filter_local_caps( $allcaps, $caps, $args, $user ) {
-		if ( empty( $args[2] ) ) {
-			return $allcaps;
-		}
-
-		$local_id = $args[2];
-		$turma_id = get_post_meta( $local_id, '_turma', true );
-		$escola_id = get_post_meta( $local_id, '_escola', true );
-
-		// Professores can only manage locals in their assigned turmas
-		if ( in_array( 'professor', (array) $user->roles ) ) {
-			$linked_turmas = get_user_meta( $user->ID, '_linked_turmas', true );
-			if ( ! $linked_turmas || ! in_array( $turma_id, (array) $linked_turmas ) ) {
-				if ( in_array( 'edit_local', $caps ) || in_array( 'delete_local', $caps ) || in_array( 'create_local', $caps ) ) {
-					$allcaps = array_diff_key( $allcaps, array_flip( $caps ) );
-				}
-			}
-		}
-
-		// Students can read locals in their turmas
-		if ( in_array( 'aluno', (array) $user->roles ) ) {
-			$linked_turmas = get_user_meta( $user->ID, '_linked_turmas', true );
-			if ( $turma_id && ( ! $linked_turmas || ! in_array( $turma_id, (array) $linked_turmas ) ) ) {
-				if ( in_array( 'read_local', $caps ) ) {
-					$allcaps = array_diff_key( $allcaps, array_flip( $caps ) );
-				}
-			}
-		}
-
-		return $allcaps;
-	}
-
-	private function filter_observacao_caps( $allcaps, $caps, $args, $user ) {
-		if ( empty( $args[2] ) ) {
-			return $allcaps;
-		}
-
-		$obs_id = $args[2];
-		$obs = get_post( $obs_id );
-		if ( ! $obs || $obs->post_type !== 'remc_observacao' ) {
-			return $allcaps;
-		}
-
-		$author_id = $obs->post_author;
-		$turma_id = get_post_meta( $obs_id, '_turma', true );
-
-		// Students can only edit their own observations (drafts)
-		if ( in_array( 'aluno', (array) $user->roles ) && $user->ID !== $author_id ) {
-			if ( in_array( 'edit_observacao', $caps ) || in_array( 'delete_observacao', $caps ) ) {
-				$allcaps = array_diff_key( $allcaps, array_flip( $caps ) );
-			}
-		}
-
-		// Students can only publish their own observations
-		if ( in_array( 'aluno', (array) $user->roles ) && $user->ID !== $author_id && in_array( 'publish_observacao', $caps ) ) {
-			$allcaps = array_diff_key( $allcaps, array_flip( $caps ) );
-		}
-
-		// Professores can only approve/edit observations in their turmas
-		if ( in_array( 'professor', (array) $user->roles ) ) {
-			$linked_turmas = get_user_meta( $user->ID, '_linked_turmas', true );
-			if ( $turma_id && ( ! $linked_turmas || ! in_array( $turma_id, (array) $linked_turmas ) ) ) {
-				if ( in_array( 'publish_observacao', $caps ) || in_array( 'approve_observacao', $caps ) ) {
-					$allcaps = array_diff_key( $allcaps, array_flip( $caps ) );
-				}
-			}
-		}
-
-		// Approve capability check
-		if ( in_array( 'approve_observacao', $caps ) ) {
-			$status = get_post_meta( $obs_id, '_status', true );
-			if ( $status !== 'pendente' ) {
-				$allcaps = array_diff_key( $allcaps, array_flip( $caps ) );
-			}
-		}
-
-		return $allcaps;
-	}
-
-	private function filter_atividade_caps( $allcaps, $caps, $args, $user ) {
-		if ( empty( $args[2] ) ) {
-			return $allcaps;
-		}
-
-		$ativ_id = $args[2];
-		$ativ = get_post( $ativ_id );
-		if ( ! $ativ || $ativ->post_type !== 'remc_atividade' ) {
-			return $allcaps;
-		}
-
-		$author_id = $ativ->post_author;
-		$turma_id = get_post_meta( $ativ_id, '_turma', true );
-
-		// Students can only edit their own activities
-		if ( in_array( 'aluno', (array) $user->roles ) && $user->ID !== $author_id ) {
-			if ( in_array( 'edit_atividade', $caps ) || in_array( 'delete_atividade', $caps ) ) {
-				$allcaps = array_diff_key( $allcaps, array_flip( $caps ) );
-			}
-		}
-
-		// Professores can only edit activities in their turmas
-		if ( in_array( 'professor', (array) $user->roles ) ) {
-			$linked_turmas = get_user_meta( $user->ID, '_linked_turmas', true );
-			if ( $turma_id && ( ! $linked_turmas || ! in_array( $turma_id, (array) $linked_turmas ) ) ) {
-				if ( in_array( 'edit_atividade', $caps ) || in_array( 'delete_atividade', $caps ) ) {
-					$allcaps = array_diff_key( $allcaps, array_flip( $caps ) );
-				}
-			}
-		}
-
-		return $allcaps;
 	}
 }

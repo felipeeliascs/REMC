@@ -1,128 +1,103 @@
 # Documentação - Permissões REMC
 
-## Papéis e Capabilities
+> **Modelo efetivo:** a autorização por objeto é aplicada no filtro
+> `map_meta_cap` (`Remc_Roles_Capabilities::map_meta_cap`), devolvendo
+> `do_not_allow` quando o vínculo com a escola/turma não confere. Papéis e
+> capabilities são criados por `Remc_Roles_Capabilities::register_caps()`
+> (`add_role()`), incluindo um mapa explícito de capabilities por CPT.
 
-### Administrador
-- Gerenciar escolas, professores e turmas
-- Publicar tutoriais
-- Aprovar/reviver observações de qualquer turma
-- Exportar dados de todas as turmas
+## Papéis
 
-**Capabilities:**
-- `read`, `edit_posts`, `delete_posts`
-- `manage_escolas`, `manage_turmas`, `manage_alunos`
-- `reset_student_password`
-- `export_data`
+| Papel | Criado por | Resumo |
+|-------|-----------|--------|
+| `administrator` | WordPress | Recebe todas as capabilities da REMC |
+| `professor` | remc-core (`add_role`) | Revisa turmas sob sua responsabilidade |
+| `aluno` | remc-core (`add_role`) | Registra e consulta dados da própria turma |
+| `visitante` | remc-core (`add_role`) | Somente `read` + tutoriais públicos |
 
-### Professor
-- Criar e gerenciar turmas apenas nas escolas vinculadas
-- Aprovar/devolver observações de sua turma
-- Ver e exportar dados de sua turma
-- Editar tutoriais próprios
-- **Não pode** redefinir senhas de alunos também vinculados a outros professores
+## Capabilities (por CPT, via mapa explícito)
 
-**Capabilities:**
-- `read`, `edit_posts`, `delete_posts`
-- `read_escola`, `edit_escola` (vinculada à escola)
-- `read_local`, `edit_local`, `create_local` (vinculada à turma)
-- `read_observacao`, `edit_observacao`, `create_observacao`, `publish_observacao`, `approve_observacao` (vinculada à turma)
-- `read_atividade`, `edit_atividade`, `create_atividade` (vinculada à turma)
-- `export_data` (vinculada à turma)
+Os CPTs não usam a pluralização automática do WordPress. O mapa é:
 
-### Aluno
-- Criar observações em locais autorizados de sua turma
-- Criar atividades
-- Ver dados de sua turma (apenas aprovados)
-- Editar apenas seus próprios registros
-- **Não pode** ver/alterar dados de outros alunos
-- **Não pode** publicar tutoriais ou fazer upload de arquivos
+| CPT | exemplo de capabilities |
+|-----|--------------------------|
+| `remc_observacao` | `create_observacao`, `edit_observacao`, `edit_observacoes`, `edit_published_observacoes`, `publish_observacao`, `read_private_observacoes` |
+| `remc_atividade` | `create_atividade`, `edit_atividade`, `edit_atividades` |
+| `remc_local` | `create_local`, `edit_local`, `edit_locais` |
+| `remc_escola` | `create_escola`, `edit_escola`, `edit_escolas` |
+| `remc_tutorial` | `create_tutorial`, `edit_tutorial`, `edit_tutoriais`, `publish_tutorial` |
 
-**Capabilities:**
-- `read`, `edit_posts`
-- `read_observacao`, `edit_observacao`, `create_observacao`
-- `read_atividade`, `edit_atividade`, `create_atividade`
+## Autorização por objeto (map_meta_cap)
 
-### Visitante
-- Apenas acesso público a tutoriais publicados
-- **Não pode** acessar alunos, perfis, turmas ou registros individuais
+### Observação (`remc_observacao`)
 
-**Capabilities:**
-- `read` (apenas para conteúdo público)
+| Situação | edit | read | delete |
+|----------|------|------|--------|
+| Administrador | ✅ | ✅ | ✅ |
+| Autor, observação aberta (rascunho/devolvido) | ✅ | ✅ | ✅ |
+| Autor, observação aprovada | ❌ (reabrir antes) | ✅ | ❌ |
+| Professor responsável pela turma | ✅ | ✅ | ❌ (só admin) |
+| Professor de outra turma | ❌ | ❌ | ❌ |
+| Colega da mesma turma | ❌ | ✅ (apenas aprovadas) | ❌ |
+| Aluno de outra turma | ❌ | ❌ | ❌ |
 
-## Regras de Autorização por Objeto
+### Atividade (`remc_atividade`)
+- Autor: acesso total ao próprio registro.
+- Professor responsável pela turma: `read` e `edit` (revisão).
+- Demais: negado.
 
-### Escola
-- Administradores têm acesso total
-- Professores só acessam escolas vinculadas
-- Vínculo: `usermeta._linked_escola` → `post_id`
+### Local e Escola
+- Professor: gerencia locais das turmas que administra; escola à qual está
+  vinculado (`_linked_escola`).
+- Aluno: lê locais da própria turma.
+- Demais: negado.
 
-### Local
-- Administradores têm acesso total
-- Professores só acessam locais de turmas sob sua responsabilidade
-- Alunos só visualizam locais de sua turma
-- Vínculo: `postmeta._turma` → `group_id` → `usermeta._linked_turmas`
+## Vínculo professor ↔ turma
 
-### Observação
-- Administradores têm acesso total
-- Alunos só acessam suas próprias observações
-- Professores só acessam observações de sua turma
-- Aluno pode editar apenas rascunhos/drafts próprios
-- Professor pode aprovar/devolver observações de sua turma
-- Vínculo: `postmeta._turma` → `group_id`
+`managed_turmas( $user_id )` considera:
+1. `usermeta._linked_turmas`; e
+2. grupos cujo `groupmeta professor_responsavel` seja o usuário.
 
-### Atividade
-- Administradores têm acesso total
-- Alunos só acessam suas próprias atividades
-- Professores só acessam atividades de sua turma
-- Vínculo: `postmeta._turma` → `group_id`
+Assim, um papel global de professor **não** dá acesso a todas as turmas.
 
-### Tutorial
-- Todos podem ler tutoriais publicados
-- Professores e administradores podem criar/editar
-- Administradores publicam
-- Aluno não pode publicar
+## Validação no salvamento
 
-## Controle de Senhas
+`validate_scope()` remove o vínculo `_turma` quando o usuário tenta registrar
+uma observação/atividade em turma da qual não participa (aluno) nem administra
+(professor).
 
-- Professores só podem redefinir senhas de alunos **exclusivamente** vinculados a suas turmas
-- Se um aluno está em turmas de múltiplos professores, apenas administrador pode redefinir a senha
-- Senhas iniciais são temporárias, exigindo troca no primeiro login
+## Controle de senhas
 
-## Bloqueio de Previsão
+- Professores só podem redefinir senhas de alunos vinculados exclusivamente às
+  turmas sob sua responsabilidade.
+- Aluno em turmas de professores diferentes: redefinição apenas pelo
+  administrador.
+- Senhas iniciais são temporárias, com troca no primeiro acesso.
 
-- Hipótese de previsão não pode ser editada após envio
-- Aprovação docente posterior não libera edição da hipótese original
-- Versões criadas após início do intervalo previsto não são aceitas como antecipadas
+## Bloqueio de previsão
 
-## Bloqueio Temporal
-
-- Observações aprovadas não aparecem em consultas se foram reabertas para correção
-- Rascunhos, pendentes e devolvidas não aparecem em gráficos ou agregações
-- Somente observações `publish` são contabilizadas em séries históricas
-
-## Segurança de Dados
-
-- Não usar REST API genérica para observações privadas
-- Nonce obrigatório em todos os formulários e AJAX
-- Validação de autorização por objeto em todas as operações
-- Páginas privadas não devem ser servidas por cache compartilhado
-- Exportações CSV não devem ficar em URLs públicas persistentes
+- Hipótese imutável após envio; aprovação posterior não libera edição.
+- Versões criadas após o início do intervalo previsto não valem como
+  previsão antecipada.
 
 ## Feed social (compartilhamento de dados)
 
-- **Compartilhar:** apenas a autora ou o autor da observação, somente se estiver
+- **Compartilhar:** apenas a autora ou o autor da observação, somente se
   **aprovada** e se o aluno for **membro da turma** dona do registro.
 - **Descompartilhar:** a autora ou o autor, a qualquer momento.
 - **Ler (visitante deslogado):** apenas itens do componente `remc`
   (`remc_shared_observation`); não vê itens de membros/grupos.
-- **Ler (aluno/professor logado):** vê os itens compartilhados; o conteúdo da
-  turma continua restrito pelo vínculo de grupo.
 - **Comentar e curtir:** apenas **membros da turma** daquela observação.
-  Visitante e alunos de outras turmas não interagem.
 - **Não compartilhável:** rascunhos, pendentes e devolvidas.
 - **Reabertura/devolução:** o item sai do feed; nova publicação exige novo opt-in.
-- **Nunca exposto:** notas, e-mail, nome completo, endereço residencial e o
-  estado de revisão de registros não aprovados.
+- **Nunca exposto:** notas, e-mail, nome completo e endereço residencial.
+
+## Segurança de dados
+
+- Não usar REST genérica para observações privadas.
+- Nonce em formulários e AJAX; nonce **não** substitui autorização por objeto.
+- Páginas privadas não devem ser servidas por cache compartilhado.
+- Exportações CSV não ficam em URL pública persistente.
 
 ## Auditoria
 

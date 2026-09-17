@@ -1,5 +1,47 @@
 # CHANGELOG.md
 
+## [0.4.0] — 2026-09-17 — Menu principal e correção do modelo de permissões
+
+### Corrigido (falhas graves e pré-existentes)
+- **Papéis do projeto nunca eram criados.** `Remc_Roles_Capabilities` só chamava
+  `get_role()`, então `professor`, `aluno` e `visitante` não existiam: os
+  usuários ficavam sem papel e as capabilities eram decorativas. Agora os papéis
+  são criados com `add_role()` e recebem as capabilities corretas.
+- **Autorização por objeto não funcionava.** Havia vazamento (aluno de outra
+  turma lia observações) e bloqueio indevido (professor responsável não podia
+  revisar). A verificação migrou para o filtro `map_meta_cap`, devolvendo
+  `do_not_allow` quando o vínculo com escola/turma não confere.
+- **Capabilities dos CPTs geravam nomes errados** (`edit_remc_observacaos`).
+  Agora há mapa explícito de capabilities por CPT (`edit_observacao`,
+  `edit_published_observacoes`, etc.).
+- **`edit_published_posts` caía numa capability genérica**, contornando os
+  controles por tipo de conteúdo. Resolvido pelo mapa explícito.
+- **Meta boxes listavam `post_type=group`**, que não existe no BuddyPress (a
+  lista de turmas vinha vazia). Agora usam `groups_get_groups()` filtrado pelas
+  turmas do usuário.
+- Vínculo de turma validado no salvamento: não é possível registrar dados em
+  turma da qual não se participa (`validate_scope`).
+
+### Adicionado
+- Menu principal (localização `main`) criado/reconciliado pelo bootstrap, com
+  itens dinâmicos por perfil resolvidos no tema
+  (`remc_filter_nav_menu_objects`): Minha timeline, Meu perfil, Painel do Aluno,
+  Painel do Professor e Área de trabalho aparecem só para quem se aplica.
+- Páginas "Painel do Aluno" e "Painel do Professor" (templates do tema) criadas
+  pelo bootstrap.
+- Arquivo público de tutoriais (`has_archive`), servido em `/tutoriais/`.
+- Permalinks amigáveis (`/%postname%/`) na instalação e na modernização.
+
+### Verificado
+- Autorização: admin `edit/read/delete=true`; professor A `edit/read=true/delete=false`;
+  professor B e aluno de outra turma `false`; autor não edita observação
+  aprovada (só após reabertura); colega de turma lê somente aprovadas.
+- `managed_turmas`: professor A → `[1]`, professor B → `[2]`.
+- Menu: visitante vê Início/Timeline/Tutoriais/Turmas; aluno e professor veem
+  também seus painéis; URLs residem em `/activity/`, `/grupos/`, `/tutoriais/`.
+- HTTP 200 em `/`, `/activity/`, `/tutoriais/`, `/grupos/`, `/painel-do-aluno/`;
+  `debug.log` limpo; feed REST com 1 item.
+
 ## [0.3.0] — 2026-09-17 — Rede social de dados meteorológicos
 
 ### Adicionado
