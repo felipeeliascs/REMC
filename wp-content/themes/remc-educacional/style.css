@@ -210,6 +210,24 @@ th {
 	font-weight: 600;
 }
 
+/* Painel de compartilhamento na página de atividades */
+.remc-share-panel {
+	margin: 1rem 0 1.5rem;
+	padding: 1rem;
+	border: 1px solid #dcdcde;
+	border-left: 4px solid var(--remc-blue);
+	border-radius: 4px;
+	background-color: var(--remc-light);
+}
+
+.remc-share-panel h2 {
+	margin-top: 0;
+}
+
+.remc-share-item {
+	margin-top: 0.75rem;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
 	.nav-main ul {

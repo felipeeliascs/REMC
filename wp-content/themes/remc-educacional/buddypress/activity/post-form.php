@@ -1,15 +1,13 @@
 <?php
 /**
- * REMC: o feed publico carrega apenas dados meteorologicos compartilhados
- * (componente "remc" / tipo "remc_shared_observation").
+ * REMC: substitui o formulário "O que há de novo?" do BuddyPress.
  *
- * Este arquivo sobrescreve intencionalmente o template do BuddyPress
- * (buddypress/activity/post-form.php) para remover o formulario de texto livre
- * ("O que ha de novo?"). Sem ele, qualquer pessoa logada poderia publicar
- * texto arbitrario no feed publico, o que contraria o requisito de expor
- * somente dados observados e aprovados.
+ * O feed público da REMC não aceita texto livre: ele carrega apenas dados
+ * meteorológicos observados e aprovados, compartilhados por opção da autora ou
+ * do autor. Este override (buddypress/activity/post-form.php) mantém a
+ * privacidade e oferece o caminho correto de compartilhamento.
  *
- * Nao alteramos arquivos do nucleo nem do BuddyPress: e um override de tema.
+ * Não alteramos arquivos do núcleo nem do BuddyPress.
  *
  * @package remc-educacional
  */
@@ -18,4 +16,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// Intencionalmente vazio: o feed e alimentado apenas pelo remc-core.
+if ( function_exists( 'remc_activity_share_panel' ) ) {
+	remc_activity_share_panel();
+}

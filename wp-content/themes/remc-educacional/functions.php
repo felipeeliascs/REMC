@@ -279,3 +279,140 @@ function remc_filter_nav_menu_objects( $items, $args = null ) {
 	return $keep;
 }
 add_filter( 'wp_nav_menu_objects', 'remc_filter_nav_menu_objects', 10, 2 );
+
+/**
+ * Bloco reutilizável de compartilhamento no feed.
+ *
+ * Usado no Painel do Aluno e na página de atividades (no lugar do antigo
+ * formulário de texto livre). Só a autora ou o autor pode compartilhar, e
+ * somente observações aprovadas com variáveis reconhecidas.
+ *
+ * @param array $args {
+ *     @type bool $mostrar_titulo Exibe o cabeçalho do bloco. Padrão true.
+ * }
+ */
+function remc_share_panel( $args = array() ) {
+	if ( ! is_user_logged_in() ) {
+		return;
+	}
+
+	$args  = wp_parse_args( $args, array( 'mostrar_titulo' => true ) );
+	$user  = wp_get_current_user();
+
+	$remc_feed = isset( $_GET['remc_feed'] ) ? sanitize_key( wp_unslash( $_GET['remc_feed'] ) ) : '';
+	if ( $remc_feed ) {
+		$msgs = array(
+			'shared'   => __( 'Dados compartilhados no feed da comunidade.', 'remc-educacional' ),
+			'unshared' => __( 'Dados removidos do feed.', 'remc-educacional' ),
+			'error'    => __( 'Não foi possível compartilhar agora. Tente novamente.', 'remc-educacional' ),
+		);
+		$tipo = ( 'error' === $remc_feed ) ? 'error' : 'success';
+		printf(
+			'<div class="form-status %s" role="status">%s</div>',
+			esc_attr( $tipo ),
+			esc_html( isset( $msgs[ $remc_feed ] ) ? $msgs[ $remc_feed ] : '' )
+		);
+	}
+
+	if ( $args['mostrar_titulo'] ) {
+		echo '<h2>' . esc_html__( 'Compartilhar dados meteorológicos', 'remc-educacional' ) . '</h2>';
+	}
+	?>
+	<p class="description">
+		<?php esc_html_e( 'Somente observações aprovadas podem ser compartilhadas, e apenas por você. A prévia mostra exatamente o que ficará público: sem notas, sem e-mail, sem nome completo e sem endereço residencial.', 'remc-educacional' ); ?>
+	</p>
+	<?php
+
+	$aprovadas = get_posts( array(
+		'post_type'      => 'remc_observacao',
+		'post_status'    => 'publish',
+		'author'         => $user->ID,
+		'posts_per_page' => 20,
+		'orderby'        => 'date',
+		'order'          => 'DESC',
+		'meta_query'     => array(
+			array( 'key' => '_status', 'value' => 'aprovado' ),
+		),
+	) );
+
+	if ( empty( $aprovadas ) ) {
+		echo '<p>' . esc_html__( 'Você ainda não tem observações aprovadas para compartilhar.', 'remc-educacional' ) . '</p>';
+		return;
+	}
+
+	foreach ( $aprovadas as $obs ) {
+		$shared = (int) get_post_meta( $obs->ID, '_shared_activity_id', true );
+		$data   = get_post_meta( $obs->ID, '_observation_date', true );
+		$previa = class_exists( 'Remc_Activity' ) ? Remc_Activity::build_public_content( $obs->ID ) : '';
+		?>
+		<article class="card remc-share-item">
+			<h3><?php echo esc_html( get_the_title( $obs ) ); ?></h3>
+			<p>
+				<?php
+				echo esc_html( sprintf(
+					/* translators: %s: data da observação */
+					__( 'Observado em %s', 'remc-educacional' ),
+					$data ? mysql2date( 'd/m/Y H:i', $data ) : get_the_date( '', $obs )
+				) );
+				?>
+			</p>
+
+			<details>
+				<summary><?php esc_html_e( 'Ver prévia pública', 'remc-educacional' ); ?></summary>
+				<div class="feed-preview">
+					<?php
+					if ( $previa ) {
+						echo wp_kses_post( $previa );
+					} else {
+						echo '<p>' . esc_html__( 'Este registro não tem variáveis reconhecidas (por exemplo, os dados foram salvos com um nome de campo diferente). Edite a observação e use os campos do formulário para poder compartilhar.', 'remc-educacional' ) . '</p>';
+					}
+					?>
+				</div>
+			</details>
+
+			<?php if ( ! $previa ) : ?>
+				<p><span class="badge badge-rejected"><?php esc_html_e( 'Sem dados reconhecidos', 'remc-educacional' ); ?></span></p>
+				<p>
+					<?php if ( current_user_can( 'edit_post', $obs->ID ) ) : ?>
+						<a class="button button-secondary" href="<?php echo esc_url( admin_url( 'post.php?action=edit&post=' . $obs->ID ) ); ?>">
+							<?php esc_html_e( 'Editar observação', 'remc-educacional' ); ?>
+						</a>
+					<?php else : ?>
+						<?php esc_html_e( 'Peça ao professor para devolver a observação e corrija os campos antes de compartilhar.', 'remc-educacional' ); ?>
+					<?php endif; ?>
+				</p>
+			<?php elseif ( $shared ) : ?>
+				<p><span class="badge badge-approved"><?php esc_html_e( 'Compartilhado no feed', 'remc-educacional' ); ?></span></p>
+				<p>
+					<a class="button button-secondary"
+						href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=remc_unshare_observation&observation=' . $obs->ID ), 'remc_unshare_observation_' . $obs->ID ) ); ?>">
+						<?php esc_html_e( 'Remover do feed', 'remc-educacional' ); ?>
+					</a>
+				</p>
+			<?php else : ?>
+				<p>
+					<a class="button button-primary"
+						href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=remc_share_observation&observation=' . $obs->ID ), 'remc_share_observation_' . $obs->ID ) ); ?>">
+						<?php esc_html_e( 'Compartilhar no feed', 'remc-educacional' ); ?>
+					</a>
+				</p>
+			<?php endif; ?>
+		</article>
+		<?php
+	}
+}
+
+/**
+ * Mostra o bloco de compartilhamento no lugar do formulário de texto livre.
+ *
+ * O template do BuddyPress (activity/post-form.php) é sobrescrito pelo tema e
+ * chama esta função.
+ */
+function remc_activity_share_panel() {
+	if ( ! is_user_logged_in() ) {
+		return;
+	}
+	echo '<div class="remc-share-panel">';
+	remc_share_panel();
+	echo '</div>';
+}

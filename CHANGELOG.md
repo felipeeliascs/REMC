@@ -1,5 +1,27 @@
 # CHANGELOG.md
 
+## [0.4.2] — 2026-09-17 — Compartilhar direto na página do feed
+
+### Corrigido
+- A página `/activity/` não oferecia nenhum caminho de compartilhamento (o
+  formulário de texto livre foi removido de propósito), o que dava a impressão
+  de que "não dá para compartilhar nada". Agora o tema exibe ali o bloco
+  **"Compartilhar dados meteorológicos"** para usuários logados, com a mesma
+  prévia e os botões de compartilhar/remover.
+
+### Alterado
+- O bloco de compartilhamento virou a função reutilizável `remc_share_panel()`
+  (tema), usada no Painel do Aluno e na página de atividades — evita duplicação.
+- O override `buddypress/activity/post-form.php` deixou de ser vazio: ele chama
+  `remc_activity_share_panel()`, cobrindo o diretório de atividades, a atividade
+  do próprio perfil e a atividade de grupo.
+
+### Verificado (HTTP real)
+- Deslogado: `/activity/` sem o bloco de compartilhamento.
+- Logado como aluno: `/activity/` mostra o bloco, a prévia e o botão; o feed vai
+  de 1 → 0 (remover) e 0 → 1 (compartilhar). Sem formulário de texto livre.
+- `debug.log` limpo; `/`, `/activity/` e `/painel-do-aluno/` em 200.
+
 ## [0.4.1] — 2026-09-17 — Formulário das variáveis e compartilhamento no Painel
 
 ### Corrigido
