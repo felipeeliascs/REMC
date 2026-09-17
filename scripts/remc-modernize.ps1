@@ -69,6 +69,7 @@ foreach ($comp in @("notifications", "friends", "messages", "blogs")) {
 Write-Host "Aplicando configuracoes..." -ForegroundColor Cyan
 Invoke-Wp option update timezone_string "America/Sao_Paulo" *> $null
 Invoke-Wp option update blog_public 0 *> $null
+Invoke-Wp rewrite structure "/%postname%/" --hard *> $null
 
 Write-Host ""
 Write-Host "--- Versoes apos a modernizacao ---" -ForegroundColor Green

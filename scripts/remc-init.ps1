@@ -104,12 +104,14 @@ Write-Host "Ativando plugin e tema da REMC..." -ForegroundColor Cyan
 Invoke-Wp plugin activate remc-core
 Invoke-Wp theme activate remc-educacional
 
-Write-Host "Aplicando configuracoes (pt_BR, fuso, restricoes)..." -ForegroundColor Cyan
+Write-Host "Aplicando configuracoes (pt_BR, fuso, permalinks)..." -ForegroundColor Cyan
 Invoke-Wp language core install pt_BR --activate *> $null
 Invoke-Wp option update timezone_string "America/Sao_Paulo" *> $null
 Invoke-Wp option update blog_public 0 *> $null
 Invoke-Wp option update blogname "REMC - Rede Educacional de Monitoramento Climatico" *> $null
 Invoke-Wp option update WPLANG "pt_BR" *> $null
+# Permalinks amigaveis: /activity/, /members/<login>/activity/
+Invoke-Wp rewrite structure "/%postname%/" --hard *> $null
 
 Write-Host "Executando bootstrap de dados ficticios..." -ForegroundColor Cyan
 Invoke-Wp remc bootstrap
