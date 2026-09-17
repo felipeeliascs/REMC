@@ -186,8 +186,69 @@ Dados entram na série histórica da turma
 - Sem gráficos interativos no navegador (placeholder para Chart.js)
 - Sem geolocalização ou mapas
 
-## Versionamento
+## Camada social (feed de dados meteorológicos)
 
+O feed é uma rede social temática: os alunos interagem, mas o que circula são
+**dados meteorológicos observados e aprovados**, nunca texto livre.
+
+### Componente
+
+- Usa o componente **`activity` do BuddyPress** (`class-remc-activity.php`).
+- Ação personalizada: componente `remc`, tipo `remc_shared_observation`
+  (`bp_activity_set_action`).
+- O feed aparece no diretório de atividades do BuddyPress
+  (`http://127.0.0.1/?bp_activities=1`) e via REST
+  (`/buddypress/v1/activity`).
+
+### Fluxo de compartilhamento (opt-in manual)
+
+1. A observação precisa estar **aprovada** (`post_status = publish` e
+   `_status = aprovado`).
+2. Só a **autora ou o autor** (aluno dono do registro) pode compartilhar.
+3. A meta box "Feed REMC" mostra a **prévia exata** do que ficará público.
+4. Ao confirmar, cria-se um item de atividade e grava-se
+   `_shared_activity_id` na observação.
+5. Compartilhar duas vezes não duplica (idempotente).
+
+### Sincronização com o ciclo de revisão
+
+- Reabrir, devolver, rejeitar ou apagar a observação **remove o item do feed**
+  (`transition_post_status` e `before_delete_post`).
+- Ao ser reaprovada, a observação **não é republicada automaticamente**:
+  exige novo opt-in do aluno.
+- Rascunhos, pendentes e devolvidas nunca geram item no feed.
+
+### Dados expostos (e o que nunca é exposto)
+
+O texto público é montado a partir dos campos estruturados:
+
+| Exposto | Não exposto |
+|---------|-------------|
+| Variável e valor (mm, °C, RPM) | Notas livres (`_notes`) |
+| Período de acumulação | E-mail e credenciais |
+| Rótulo do local | Endereço residencial (ponto doméstico = "Ponto doméstico") |
+| Data/hora e método | Rascunhos, pendentes e devolvidas |
+| Aviso "DADOS FICTÍCIOS" em registros de demonstração | Nome completo do aluno |
+
+### Interações e visibilidade
+
+- **Visitante deslogado:** lê os itens compartilhados (visibilidade pública),
+  e só vê itens do componente `remc` (filtro `bp_activity_get_where_conditions`).
+- **Comentar e curtir:** restrito a **membros da turma dona da observação**
+  (`bp_activity_can_comment` / `bp_activity_can_favorite` + `groups_is_user_member`).
+- **Texto livre removido:** o override de tema
+  `buddypress/activity/post-form.php` elimina o formulário "O que há de novo?"
+  para que o feed só carregue dados observados.
+
+### Limitações conhecidas
+
+- O bloqueio de `activity_update` (texto livre) é feito na interface (override de
+  tema). Ainda **não há bloqueio no servidor** para postagem via AJAX/REST por
+  usuário autenticado; recomenda-se adicionar um filtro de servidor antes de uso
+  público real.
+- Não há moderação de comentários nem denúncia de conteúdo no MVP.
+
+## Versionamento
 - Versão fixada: WordPress 6.4.3, BuddyPress 12.2.0
 - PHP 8.1.x, MariaDB 10.6.x
 - Data de corte: 31/01/2024

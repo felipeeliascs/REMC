@@ -108,6 +108,22 @@
 - Páginas privadas não devem ser servidas por cache compartilhado
 - Exportações CSV não devem ficar em URLs públicas persistentes
 
+## Feed social (compartilhamento de dados)
+
+- **Compartilhar:** apenas a autora ou o autor da observação, somente se estiver
+  **aprovada** e se o aluno for **membro da turma** dona do registro.
+- **Descompartilhar:** a autora ou o autor, a qualquer momento.
+- **Ler (visitante deslogado):** apenas itens do componente `remc`
+  (`remc_shared_observation`); não vê itens de membros/grupos.
+- **Ler (aluno/professor logado):** vê os itens compartilhados; o conteúdo da
+  turma continua restrito pelo vínculo de grupo.
+- **Comentar e curtir:** apenas **membros da turma** daquela observação.
+  Visitante e alunos de outras turmas não interagem.
+- **Não compartilhável:** rascunhos, pendentes e devolvidas.
+- **Reabertura/devolução:** o item sai do feed; nova publicação exige novo opt-in.
+- **Nunca exposto:** notas, e-mail, nome completo, endereço residencial e o
+  estado de revisão de registros não aprovados.
+
 ## Auditoria
 
 - Cada revisão guarda autoria, datas e status anterior

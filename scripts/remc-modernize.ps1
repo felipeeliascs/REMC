@@ -58,11 +58,11 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "Reativando componentes e plugin/tema..." -ForegroundColor Cyan
 Invoke-Wp plugin activate buddypress remc-core
 Invoke-Wp theme activate remc-educacional
-foreach ($comp in @("xprofile", "settings", "groups")) {
+# activity: feed social de dados meteorologicos (remc-core). O restante fica fora do MVP.
+foreach ($comp in @("xprofile", "settings", "groups", "activity")) {
     Invoke-Wp bp component activate $comp *> $null
 }
-# O BP 14.x ativa activity/notifications por padrao; o MVP exige o feed desativado.
-foreach ($comp in @("activity", "notifications", "friends", "messages", "blogs")) {
+foreach ($comp in @("notifications", "friends", "messages", "blogs")) {
     Invoke-Wp bp component deactivate $comp *> $null
 }
 

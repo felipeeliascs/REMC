@@ -1,5 +1,41 @@
 # CHANGELOG.md
 
+## [0.3.0] — 2026-09-17 — Rede social de dados meteorológicos
+
+### Adicionado
+- `remc-core/includes/class-remc-activity.php`: feed social no componente
+  `activity` do BuddyPress, com ação própria `remc_shared_observation`.
+- Compartilhamento **opt-in manual** pelo aluno, somente de observação aprovada,
+  com prévia exata do texto que ficará público.
+- Interações (comentar/curtir) restritas a membros da turma; visitante apenas lê.
+- Visibilidade pública limitada aos itens do componente `remc`.
+- Demonstração no bootstrap: compartilha a observação de chuva (idempotente).
+
+### Corrigido
+- Vocabulário de revisão inconsistente: o bootstrap e o meta box gravavam
+  `_status` como `publish/pending` em vez de `aprovado/pendente`. Corrigido e
+  dados existentes migrados pela reexecução do bootstrap.
+- Filtro de diretório público montava SQL inválido
+  (`Unknown column 'Array'`); agora usa uma condição SQL válida.
+- Cache de autorização por item ignorava o usuário; passou a incluir o
+  `user_id` na chave.
+- `bp_get_activity_id()` usado fora do loop causava warnings; trocado por acesso
+  seguro ao template global.
+- Removido código morto `class-remc-bootstrap.php` (não era carregado).
+
+### Alterado
+- Componente `activity` passa a ficar **ativo** (feed social); `notifications`,
+  `friends`, `messages` e `blogs` permanecem desativados.
+- Override de tema `buddypress/activity/post-form.php` remove o formulário de
+  texto livre do feed.
+
+### Verificado
+- REST público `/buddypress/v1/activity` retorna o item compartilhado e não
+  expõe pendentes.
+- Devolver a observação remove o item do feed; reaprovar não republica sozinho;
+  recompartilhar não duplica.
+- `deslogado=false`, `turma B=false`, `turma A=true` para interação.
+
 ## [0.2.0] — 2026-09-17 — Modernização da stack (WordPress 7.1 + BuddyPress 14.5.2)
 
 ### Alterado

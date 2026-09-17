@@ -28,6 +28,7 @@ function remc_core_load() {
 	require_once REMC_CORE_DIR . 'includes/class-remc-reports.php';
 	require_once REMC_CORE_DIR . 'includes/class-remc-tutorials.php';
 	require_once REMC_CORE_DIR . 'includes/class-remc-meta-boxes.php';
+	require_once REMC_CORE_DIR . 'includes/class-remc-activity.php';
 
 	Remc_Post_Types::instance();
 	Remc_Roles_Capabilities::instance();
@@ -36,6 +37,10 @@ function remc_core_load() {
 	Remc_Reports::instance();
 	Remc_Tutorials::instance();
 	Remc_Meta_Boxes::instance();
+
+	if ( function_exists( 'bp_is_active' ) ) {
+		Remc_Activity::instance();
+	}
 
 	if ( defined( 'WP_CLI' ) && WP_CLI ) {
 		require_once REMC_CORE_DIR . 'includes/class-remc-bootstrap-command.php';

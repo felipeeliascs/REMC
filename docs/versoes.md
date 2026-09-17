@@ -166,13 +166,16 @@ validacoes              -> 15/30s = 30 RPM; duracao 0 recusada; 0 mm = 0;
 
 ### Diferenças de comportamento observadas
 
-- BuddyPress 14.x ativa `activity` e `notifications` por padrão; ambos foram
-  desativados para manter o requisito do MVP (feed de atividades desativado).
+- BuddyPress 14.x ativa `activity` e `notifications` por padrão. O estado final
+  adotado é: `core`, `members`, `xprofile`, `settings`, `groups` e `activity`
+  ativos (o `activity` é a base do feed social da REMC, ver
+  `docs/arquitetura.md`); `notifications`, `friends`, `messages` e `blogs`
+  permanecem desativados.
 - Os nomes das APIs de grupos usados pelo `remc-core` (`groups_create_group`,
   `groups_get_id`, `groups_edit_group_settings`, `groups_update_groupmeta`,
   `groups_join_group`, `groups_promote_member`) permanecem válidos no BP 14.x.
-- Não foi usada nenhuma API introduzida depois do corte no código do produto;
-  a modernização é apenas de ambiente.
+- A modernização é apenas de ambiente: o código do produto não passou a depender
+  de APIs introduzidas depois do corte.
 
 ### O que não foi modernizado
 

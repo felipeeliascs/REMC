@@ -59,6 +59,7 @@ class Remc_Bootstrap_Command {
 		$this->link_students();
 		$this->local_ids = $this->ensure_locals();
 		$this->ensure_observations();
+		$this->ensure_feed_demo();
 		$this->ensure_tutorials();
 		$this->ensure_activities();
 
@@ -399,15 +400,52 @@ class Remc_Bootstrap_Command {
 			update_post_meta( $obs_id, '_turma', $turma_id );
 			update_post_meta( $obs_id, '_local_id', $local_id );
 			update_post_meta( $obs_id, '_observation_date', $def['date'] );
-			update_post_meta( $obs_id, '_status', $def['status'] );
+			// Vocabulario de revisao (pt-BR), distinto do post_status do WordPress.
+			$review = ( 'publish' === $def['status'] ) ? 'aprovado' : 'pendente';
+			update_post_meta( $obs_id, '_status', $review );
 			foreach ( $def['meta'] as $k => $v ) {
 				update_post_meta( $obs_id, $k, $v );
 			}
 		}
 	}
 
-	private function ensure_tutorials() {
-		$tutoriais = array(
+	/**
+	 * Demonstracao do feed social: compartilha (opt-in simulado) uma observacao
+	 * aprovada de chuva. Idempotente.
+	 */
+	private function ensure_feed_demo() {
+		if ( ! class_exists( 'Remc_Activity' ) || ! function_exists( 'bp_activity_add' ) ) {
+			WP_CLI::line( 'Feed social indisponivel (BuddyPress/atividade inativos), pulando.' );
+			return;
+		}
+
+		$title = 'Registro Pluviometrico com chuva (DADOS FICTICIOS)';
+		$obs_id = $this->find_post_by_title( $title, 'remc_observacao' );
+		if ( ! $obs_id ) {
+			return;
+		}
+
+		if ( get_post_meta( $obs_id, '_shared_activity_id', true ) ) {
+			WP_CLI::line( 'Observacao de chuva ja compartilhada no feed, mantendo.' );
+			return;
+		}
+
+		$obs = get_post( $obs_id );
+		if ( ! $obs || 'aprovado' !== get_post_meta( $obs_id, '_status', true ) ) {
+			return;
+		}
+
+		$original = get_current_user_id();
+		wp_set_current_user( (int) $obs->post_author );
+		$ok = Remc_Activity::instance()->create_activity( $obs_id );
+		wp_set_current_user( $original );
+
+		if ( $ok ) {
+			WP_CLI::success( 'Observacao de chuva compartilhada no feed (demonstracao).' );
+		}
+	}
+
+	private function ensure_tutorials() {		$tutoriais = array(
 			array( 'I01', 'Pluviometro de Garrafa PET', 'instrumentos', 'Construir, instalar e usar um pluviometro caseiro, distinguindo volume coletado de altura de precipitacao.' ),
 			array( 'I02', 'Anemometro de Copos', 'instrumentos', 'Construir um anemometro e comparar a rotacao sob condicoes diferentes.' ),
 			array( 'I03', 'Barometro de Bexiga', 'instrumentos', 'Construir um barometro, definir linha de referencia e observar o deslocamento do ponteiro.' ),

@@ -100,6 +100,17 @@ REMC (Rede Educacional de Monitoramento Climático) é uma plataforma educaciona
 - Registros de exemplo cobrindo chuva, rotações, barômetro, nuvens, extremos, experimento, previsão
 - Identificar claramente como "DADOS FICTÍCIOS"
 
+### RF13 - Rede social de dados meteorológicos
+- Feed social (BuddyPress `activity`) onde circulam **dados observados e
+  aprovados**, não texto livre.
+- Compartilhamento **manual (opt-in)** pela autora ou autor da observação.
+- Somente observações aprovadas são compartilháveis.
+- Reabrir/devolver/apagar remove o item do feed; reaprovar não republica sozinho.
+- Comentar e curtir apenas para membros da turma.
+- Visibilidade pública restrita aos itens do componente `remc`.
+- Nunca expor notas, e-mail, nome completo ou endereço residencial.
+- Ver `docs/arquitetura.md` (seção "Camada social") e `docs/permissoes.md`.
+
 ## Requisitos Não-Funcionais
 
 ### RNF01 - Performance

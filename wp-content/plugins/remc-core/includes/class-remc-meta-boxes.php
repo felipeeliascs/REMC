@@ -104,13 +104,14 @@ class Remc_Meta_Boxes {
 		</div>
 		
 		<div class="form-group">
-			<label for="remc_observation_status">Status</label>
+			<label for="remc_observation_status">Status da revisão</label>
 			<select id="remc_observation_status" name="remc_observation_status" class="form-select">
-				<option value="draft" <?php selected( $status, 'draft' ); ?>>Rascunho</option>
-				<option value="pending" <?php selected( $status, 'pending' ); ?>>Enviado para revisão</option>
-				<option value="publish" <?php selected( $status, 'publish' ); ?>>Aprovado</option>
+				<option value="rascunho" <?php selected( $status, 'rascunho' ); ?>>Rascunho</option>
+				<option value="pendente" <?php selected( $status, 'pendente' ); ?>>Enviado para revisão</option>
+				<option value="aprovado" <?php selected( $status, 'aprovado' ); ?>>Aprovado</option>
 				<option value="devolvido" <?php selected( $status, 'devolvido' ); ?>>Devolvido</option>
 			</select>
+			<p class="description">O status de publicação do WordPress é ajustado separadamente.</p>
 		</div>
 		<?php
 	}

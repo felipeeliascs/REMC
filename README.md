@@ -6,6 +6,9 @@ Reconstrução de MVP WordPress + BuddyPress (início de 2024)
 
 Plataforma educacional para ciência cidadã, permitindo que alunos observem e registrem condições meteorológicas (chuva, vento, temperatura, nuvens), com fluxo de revisão docente e biblioteca de 13 oficinas práticas.
 
+Inclui um **feed social** (BuddyPress Activity) onde os alunos compartilham, por opção própria, apenas **observações aprovadas**. O que circula são dados meteorológicos; comentários e curtidas ficam restritos aos membros da turma, e visitantes apenas leem. Detalhes em `docs/arquitetura.md`.
+
+
 ## Como Rodar Localmente
 
 ### Opção 1: Docker Compose (Recomendado)
