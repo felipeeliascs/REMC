@@ -60,6 +60,26 @@ a:hover {
 	font-size: 1.5rem;
 }
 
+/* O título pode ser um link (fora da home); no cabeçalho ele é sempre branco. */
+.header .site-title,
+.header .site-title a,
+.header .site-title a:visited,
+.header .site-title a:hover,
+.header .site-title a:focus {
+	color: #fff;
+	text-decoration: none;
+}
+
+.header .site-title a:hover,
+.header .site-title a:focus {
+	text-decoration: underline;
+}
+
+.header .site-description {
+	color: rgba(255, 255, 255, 0.9);
+	margin: 0.25rem 0 0;
+}
+
 /* Navigation */
 .nav-main {
 	background-color: #2e8b57;
