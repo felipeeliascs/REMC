@@ -332,13 +332,17 @@ class Remc_Activity {
 		}
 
 		if ( $share ) {
-			$this->create_activity( $obs_id );
+			$resultado = $this->create_activity( $obs_id ) ? 'shared' : 'error';
 		} else {
 			$this->delete_activity( $obs_id );
+			$resultado = 'unshared';
 		}
 
 		$back = wp_get_referer();
-		wp_safe_redirect( $back ? $back : admin_url( 'edit.php?post_type=remc_observacao' ) );
+		$back = $back ? $back : admin_url( 'edit.php?post_type=remc_observacao' );
+		$back = add_query_arg( 'remc_feed', $resultado, $back );
+
+		wp_safe_redirect( $back );
 		exit;
 	}
 
@@ -502,38 +506,28 @@ class Remc_Activity {
 	public function render_meta_box( $post ) {
 		$status = get_post_meta( $post->ID, '_status', true );
 		$shared = (int) get_post_meta( $post->ID, self::META_ACTIVITY, true );
-		$is_author = ( (int) $post->post_author === get_current_user_id() );
+		$link   = get_option( 'remc_pagina_painel_aluno' );
 
 		if ( 'aprovado' !== $status || 'publish' !== $post->post_status ) {
 			echo '<p>' . esc_html__( 'Somente observações aprovadas podem ser compartilhadas no feed.', 'remc-core' ) . '</p>';
 			return;
 		}
 
-		if ( ! $is_author ) {
-			echo '<p>' . esc_html__( 'Somente o autor ou a autora pode compartilhar a própria observação.', 'remc-core' ) . '</p>';
-			echo $shared ? '<p><em>' . esc_html__( 'Compartilhada no feed.', 'remc-core' ) . '</em></p>' : '';
-			return;
-		}
-
-		echo '<p>' . esc_html__( 'Prévia pública (sem notas, sem e-mail e sem endereço residencial):', 'remc-core' ) . '</p>';
-		echo '<div style="background:#f6f7f7;border:1px solid #dcdcde;padding:8px;border-radius:4px;">';
-		echo wp_kses_post( self::build_public_content( $post->ID ) );
-		echo '</div>';
-
 		if ( $shared ) {
-			$url = wp_nonce_url(
-				admin_url( 'admin-post.php?action=remc_unshare_observation&observation=' . $post->ID ),
-				'remc_unshare_observation_' . $post->ID
-			);
-			echo '<p><a class="button" href="' . esc_url( $url ) . '">' . esc_html__( 'Remover do feed', 'remc-core' ) . '</a></p>';
-			echo '<p><em>' . esc_html__( 'Uma nova aprovação não republica automaticamente: é preciso compartilhar de novo.', 'remc-core' ) . '</em></p>';
-		} else {
-			$url = wp_nonce_url(
-				admin_url( 'admin-post.php?action=remc_share_observation&observation=' . $post->ID ),
-				'remc_share_observation_' . $post->ID
-			);
-			echo '<p><a class="button button-primary" href="' . esc_url( $url ) . '">' . esc_html__( 'Compartilhar no feed', 'remc-core' ) . '</a></p>';
+			echo '<p><em>' . esc_html__( 'Esta observação está compartilhada no feed.', 'remc-core' ) . '</em></p>';
 		}
+
+		echo '<p>';
+		if ( $link ) {
+			printf(
+				/* translators: %s: link para o painel do aluno */
+				esc_html__( 'O compartilhamento é feito pela autora ou pelo autor no %s.', 'remc-core' ),
+				'<a href="' . esc_url( $link ) . '">' . esc_html__( 'Painel do Aluno', 'remc-core' ) . '</a>'
+			);
+		} else {
+			esc_html_e( 'O compartilhamento é feito pela autora ou pelo autor no Painel do Aluno.', 'remc-core' );
+		}
+		echo '</p>';
 	}
 }
 

@@ -191,6 +191,25 @@ th {
 	margin-bottom: 2rem;
 }
 
+/* Prévia do feed (Painel do Aluno) */
+.feed-preview {
+	margin: 0.5rem 0 1rem;
+	padding: 0.75rem 1rem;
+	border: 1px solid #dcdcde;
+	border-left: 4px solid var(--remc-green);
+	border-radius: 4px;
+	background-color: var(--remc-light);
+}
+
+.feed-preview ul {
+	margin: 0.25rem 0 0.5rem 1.25rem;
+}
+
+.student-feed details summary {
+	cursor: pointer;
+	font-weight: 600;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
 	.nav-main ul {

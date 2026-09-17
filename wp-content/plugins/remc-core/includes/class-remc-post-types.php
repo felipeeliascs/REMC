@@ -1,6 +1,6 @@
 <?php
 /**
- * REMC Core - Post Types Registration
+ * REMC Core - Registro dos tipos de conteudo
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -50,63 +50,63 @@ class Remc_Post_Types {
 	public function register_post_types() {
 		// remc_escola - Escolas (sem dados pessoais)
 		register_post_type( 'remc_escola', array(
-			'label'       => 'Escolas',
-			'public'      => false,
-			'show_ui'     => true,
+			'label'        => 'Escolas',
+			'public'       => false,
+			'show_ui'      => true,
 			'show_in_rest' => false,
-			'supports'    => array( 'title' ),
-			'menu_icon'   => 'dashicons-building',
+			'supports'     => array( 'title' ),
+			'menu_icon'    => 'dashicons-building',
 			'capabilities' => $this->caps( 'escola', 'escolas' ),
 			'map_meta_cap' => true,
 		) );
 
 		// remc_local - Pontos de observacao
 		register_post_type( 'remc_local', array(
-			'label'       => 'Locais de Observação',
-			'public'      => false,
-			'show_ui'     => true,
+			'label'        => 'Locais de Observação',
+			'public'       => false,
+			'show_ui'      => true,
 			'show_in_rest' => false,
-			'supports'    => array( 'title', 'custom-fields' ),
-			'menu_icon'   => 'dashicons-location-alt',
+			'supports'     => array( 'title' ),
+			'menu_icon'    => 'dashicons-location-alt',
 			'capabilities' => $this->caps( 'local', 'locais' ),
 			'map_meta_cap' => true,
 		) );
 
 		// remc_observacao - Observacoes
 		register_post_type( 'remc_observacao', array(
-			'label'       => 'Observações',
-			'public'      => false,
-			'show_ui'     => true,
+			'label'        => 'Observações',
+			'public'       => false,
+			'show_ui'      => true,
 			'show_in_rest' => false,
-			'supports'    => array( 'title', 'custom-fields', 'revisions' ),
-			'menu_icon'   => 'dashicons-chart-line',
+			'supports'     => array( 'title', 'revisions' ),
+			'menu_icon'    => 'dashicons-chart-line',
 			'capabilities' => $this->caps( 'observacao', 'observacoes' ),
 			'map_meta_cap' => true,
-			'rewrite'     => false,
+			'rewrite'      => false,
 		) );
 
 		// remc_tutorial - Materiais didaticos (publicos quando publicados)
 		register_post_type( 'remc_tutorial', array(
-			'label'       => 'Tutoriais',
-			'public'      => true,
-			'show_ui'     => true,
+			'label'        => 'Tutoriais',
+			'public'       => true,
+			'show_ui'      => true,
 			'show_in_rest' => true,
-			'has_archive' => true,
-			'supports'    => array( 'title', 'editor', 'thumbnail', 'custom-fields', 'revisions' ),
-			'menu_icon'   => 'dashicons-book-alt',
+			'has_archive'  => true,
+			'supports'     => array( 'title', 'editor', 'thumbnail', 'custom-fields', 'revisions' ),
+			'menu_icon'    => 'dashicons-book-alt',
 			'capabilities' => $this->caps( 'tutorial', 'tutoriais' ),
 			'map_meta_cap' => true,
-			'rewrite'     => array( 'slug' => 'tutoriais' ),
+			'rewrite'      => array( 'slug' => 'tutoriais' ),
 		) );
 
 		// remc_atividade - Relatorios didaticos (privados)
 		register_post_type( 'remc_atividade', array(
-			'label'       => 'Atividades',
-			'public'      => false,
-			'show_ui'     => true,
+			'label'        => 'Atividades',
+			'public'       => false,
+			'show_ui'      => true,
 			'show_in_rest' => false,
-			'supports'    => array( 'title', 'custom-fields', 'revisions' ),
-			'menu_icon'   => 'dashicons-portfolio',
+			'supports'     => array( 'title', 'revisions' ),
+			'menu_icon'    => 'dashicons-portfolio',
 			'capabilities' => $this->caps( 'atividade', 'atividades' ),
 			'map_meta_cap' => true,
 		) );

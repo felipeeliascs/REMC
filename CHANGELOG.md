@@ -1,5 +1,52 @@
 # CHANGELOG.md
 
+## [0.4.1] — 2026-09-17 — Formulário das variáveis e compartilhamento no Painel
+
+### Corrigido
+- **O aluno não conseguia compartilhar.** A ação existia e era autorizada, mas o
+  botão ficava na tela de edição — inacessível para observações aprovadas (o
+  autor não tem `edit_post` nelas, por regra). O compartilhamento passou para o
+  **Painel do Aluno**, com prévia pública e retorno visual
+  (`?remc_feed=shared|unshared|error`).
+- **Aluno podia se auto-aprovar.** `managed_turmas()` considerava
+  `_linked_turmas` de qualquer usuário, então um aluno era tratado como
+  responsável pela turma. Agora exige papel `professor` ou `administrator`.
+- **Aprovação docente falhava** porque a checagem "pelo menos uma variável"
+  olhava apenas o POST. Agora considera o que já está salvo
+  (`observation_has_variable`).
+- **BOM** em `class-remc-post-types.php`, `compose.yaml` e `.env.example`
+  causava "Cannot modify header information ... output started at ...:1",
+  quebrando login e REST. Removido.
+- Acentuação corrompida em `class-remc-post-types.php` (dupla codificação).
+- Registro sem variáveis reconhecidas não aparece mais com botão de
+  compartilhamento; mostra o motivo e, se possível, o link de edição.
+
+### Adicionado
+- **Formulário das variáveis da observação** (o CPT antes só tinha data, turma,
+  local e situação, o que levava a campos personalizados arbitrários):
+  temperatura do ar, Tmín/Tmáx, precipitação com início/fim, anemômetro
+  (voltas/segundos e RPM calculada), barômetro (referência, deslocamento e
+  orientação), direção e intensidade do vento, condição do céu, cobertura (0–8
+  + especiais), gêneros de nuvens (múltipla escolha), método, instrumento,
+  versão do protocolo e notas.
+- Validação no salvamento por `Remc_Validation` (vírgula decimal, faixas,
+  duração > 0, RPM, períodos) com aviso em tela e exigência de ao menos uma
+  variável.
+- Situação de revisão restrita: aluno só envia para revisão; aprovar/devolver é
+  exclusivo de professor responsável ou administrador.
+
+### Alterado
+- `custom-fields` removido de `remc_observacao` e `remc_atividade` (evita
+  chaves arbitrárias como a que gerou o registro sem dados).
+
+### Verificado (HTTP real, login como aluno)
+- Painel lista a observação aprovada com prévia; "Compartilhar no feed" leva o
+  feed de 0 → 1 e "Remover do feed" de 1 → 0.
+- Registro sem variáveis não exibe botão de compartilhamento.
+- Fluxo: aluno não auto-aprova; envia para revisão; professor aprova;
+  compartilhamento funciona; duplicar não duplica; apagar remove do feed.
+- `debug.log` limpo.
+
 ## [0.4.0] — 2026-09-17 — Menu principal e correção do modelo de permissões
 
 ### Corrigido (falhas graves e pré-existentes)

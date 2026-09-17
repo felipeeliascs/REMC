@@ -116,20 +116,33 @@ class Remc_Roles_Capabilities {
 	/* ------------------------------------------------------------------ */
 
 	/**
-	 * Turmas pelas quais o usuario e responsavel (professor).
+	 * Turmas pelas quais o usuario e responsavel (apenas professor/admin).
+	 *
+	 * Alunos tambem possuem `_linked_turmas`, mas o vinculo de aluno nao da
+	 * poderes de gestao. Por isso o papel e verificado antes.
 	 *
 	 * @return int[]
 	 */
 	public function managed_turmas( $user_id ) {
+		if ( ! $user_id ) {
+			return array();
+		}
+
+		$user  = get_userdata( $user_id );
+		$roles = $user ? (array) $user->roles : array();
+		if ( ! in_array( 'professor', $roles, true ) && ! in_array( 'administrator', $roles, true ) ) {
+			return array();
+		}
+
 		$turmas = (array) get_user_meta( $user_id, '_linked_turmas', true );
 		$turmas = array_filter( array_map( 'intval', $turmas ) );
 
 		if ( function_exists( 'groups_get_groups' ) ) {
 			$grupos = groups_get_groups( array(
-				'user_id'       => $user_id,
-				'show_hidden'   => true,
-				'per_page'      => false,
-				'meta_query'    => array(
+				'user_id'    => $user_id,
+				'show_hidden' => true,
+				'per_page'   => false,
+				'meta_query' => array(
 					array(
 						'key'   => 'professor_responsavel',
 						'value' => (int) $user_id,
