@@ -110,13 +110,26 @@ wp post type list --allow-root
 
 ### Acessos locais (dados fictícios)
 
-| Perfil | Login | Senha |
-|--------|-------|-------|
-| Administrador | `admin_remc` | `admin_password_123` |
-| Professor A (Turma A) | `professor_a` | `professor_password_123` |
-| Professor B (Turma B) | `professor_b` | `professor_password_123` |
-| Aluno (Turma A) | `aluno_joao` / `aluno_maria` | `aluno_password_123` |
-| Aluno (Turma B) | `aluno_pedro` | `aluno_password_123` |
+| Perfil | Login |
+|--------|-------|
+| Administrador | `admin_remc` |
+| Professor A (Turma A) | `professor_a` |
+| Professor B (Turma B) | `professor_b` |
+| Aluno (Turma A) | `aluno_joao` / `aluno_maria` |
+| Aluno (Turma B) | `aluno_pedro` |
+
+As senhas **não ficam no repositório**. O bootstrap gera senhas aleatórias e as
+mostra **uma única vez** ao final da execução. Para fixá-las, defina antes:
+
+```bash
+REMC_ADMIN_PASSWORD=... REMC_PROFESSOR_PASSWORD=... REMC_ALUNO_PASSWORD=... \
+  wp remc bootstrap --allow-root
+```
+
+Ou use as flags `--password_admin`, `--password_professor`, `--password_aluno`.
+A senha do administrador criado pelo `wp core install` vem de
+`WP_ADMIN_PASSWORD` no `.env` (ou é gerada pelo `scripts/remc-init.ps1`).
+Para redefinir depois: `wp user update <login> --user_pass='nova' --allow-root`.
 
 ### Timeline / feed social (URLs)
 

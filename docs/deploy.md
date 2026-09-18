@@ -108,7 +108,7 @@ wp core install \
   --url=http://127.0.0.1 \
   --title="REMC" \
   --admin_user=admin \
-  --admin_password=senha123 \
+  --admin_password="$WP_ADMIN_PASSWORD" \
   --admin_email=admin@localhost \
   --allow-root
 

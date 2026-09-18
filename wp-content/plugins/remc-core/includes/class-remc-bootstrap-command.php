@@ -33,8 +33,16 @@ class Remc_Bootstrap_Command {
 	/** @var array<int> */
 	private $local_ids = array();
 
+	/** @var array Argumentos nomeados passados ao comando. */
+	private $assoc_args = array();
+
+	/** @var array<string,string> Senhas geradas nesta execucao (nao ficam no repositorio). */
+	private $senhas_geradas = array();
+
 	public function __invoke( $args, $assoc_args ) {
 		$force = WP_CLI\Utils\get_flag_value( $assoc_args, 'force', false );
+
+		$this->assoc_args = (array) $assoc_args;
 
 		WP_CLI::line( '=== REMC Bootstrap ===' );
 
@@ -73,12 +81,52 @@ class Remc_Bootstrap_Command {
 		// Necessario apos registrar o arquivo de tutoriais e criar paginas.
 		flush_rewrite_rules();
 
+		$this->relatar_senhas();
 		WP_CLI::success( 'Bootstrap da REMC concluido (dados ficticios).' );
 	}
 
 	/* ------------------------------------------------------------------ */
 	/* Helpers                                                             */
 	/* ------------------------------------------------------------------ */
+
+	/**
+	 * Senha para um papel: flag --password_<papel>, variavel de ambiente
+	 * REMC_<PAPEL>_PASSWORD ou geracao aleatoria (nao versionada).
+	 */
+	private function senha_para( $papel ) {
+		$flag = 'password_' . $papel;
+		if ( ! empty( $this->assoc_args[ $flag ] ) ) {
+			return (string) $this->assoc_args[ $flag ];
+		}
+
+		$env = getenv( 'REMC_' . strtoupper( $papel ) . '_PASSWORD' );
+		if ( $env ) {
+			return (string) $env;
+		}
+
+		if ( empty( $this->senhas_geradas[ $papel ] ) ) {
+			$this->senhas_geradas[ $papel ] = wp_generate_password( 20, true, false );
+		}
+
+		return $this->senhas_geradas[ $papel ];
+	}
+
+	/**
+	 * Mostra, uma unica vez, as senhas geradas nesta execucao.
+	 */
+	private function relatar_senhas() {
+		if ( empty( $this->senhas_geradas ) ) {
+			return;
+		}
+
+		WP_CLI::line( '' );
+		WP_CLI::warning( 'Senhas geradas nesta execucao (anote agora; nao ficam no repositorio):' );
+		foreach ( $this->senhas_geradas as $papel => $senha ) {
+			WP_CLI::line( '  ' . $papel . ': ' . $senha );
+		}
+		WP_CLI::line( 'Para fixar, defina REMC_<PAPEL>_PASSWORD ou use --password_<papel>.' );
+		WP_CLI::line( '' );
+	}
 
 	private function buddypress_ready() {
 		return function_exists( 'groups_create_group' ) && function_exists( 'groups_get_id' );
@@ -151,7 +199,7 @@ class Remc_Bootstrap_Command {
 			return $user->ID;
 		}
 
-		$id = wp_create_user( 'admin_remc', 'admin_password_123', 'admin@remc.local' );
+		$id = wp_create_user( 'admin_remc', $this->senha_para( 'admin' ), 'admin@remc.local' );
 		if ( is_wp_error( $id ) ) {
 			WP_CLI::warning( 'Nao foi possivel criar admin_remc: ' . $id->get_error_message() );
 			return 0;
@@ -170,7 +218,7 @@ class Remc_Bootstrap_Command {
 			return $user->ID;
 		}
 
-		$id = wp_create_user( $login, 'professor_password_123', $login . '@remc.local' );
+		$id = wp_create_user( $login, $this->senha_para( 'professor' ), $login . '@remc.local' );
 		if ( is_wp_error( $id ) ) {
 			WP_CLI::warning( "Nao foi possivel criar {$login}: " . $id->get_error_message() );
 			return 0;
@@ -201,7 +249,7 @@ class Remc_Bootstrap_Command {
 				continue;
 			}
 
-			$id = wp_create_user( $login, 'aluno_password_123', $login . '@remc.local' );
+			$id = wp_create_user( $login, $this->senha_para( 'aluno' ), $login . '@remc.local' );
 			if ( is_wp_error( $id ) ) {
 				WP_CLI::warning( "Nao foi possivel criar {$login}: " . $id->get_error_message() );
 				continue;

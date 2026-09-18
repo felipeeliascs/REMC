@@ -68,7 +68,7 @@ php -S 127.0.0.1:8000 -t .
 
 ```bash
 # Instalar WordPress
-wp core install --url=http://127.0.0.1 --title=REMC --admin_user=admin --admin_password=senha123
+wp core install --url=http://127.0.0.1 --title=REMC --admin_user=admin --admin_password="$WP_ADMIN_PASSWORD"
 
 # Ativar plugin
 wp plugin activate remc-core

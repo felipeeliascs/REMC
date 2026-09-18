@@ -1,5 +1,23 @@
 # CHANGELOG.md
 
+## [0.6.0] — 2026-09-18 — Senhas de demonstração geradas (sem credenciais fixas)
+
+### Alterado
+- O bootstrap **não usa mais senhas fixas**. Para cada papel (admin, professor,
+  aluno) a senha vem, em ordem de precedência: flag `--password_<papel>`,
+  variável de ambiente `REMC_<PAPEL>_PASSWORD` ou **geração aleatória**
+  (`wp_generate_password( 20 )`), exibida **uma única vez** ao final da execução.
+- `scripts/remc-init.ps1`: se `WP_ADMIN_PASSWORD` não estiver definido, gera uma
+  senha aleatória para o administrador e a mostra no resumo final.
+- Documentação (`DESENVOLVIMENTO.md`, `PROJETO-COMPLETO.md`, `INICIAR-LOCAL.md`,
+  `RESUMO-RECONSTRUCAO.md`, `docs/deploy.md`) sem credenciais fixas: exemplos
+  usam `$WP_ADMIN_PASSWORD` e explicam a geração/definição das senhas.
+
+### Verificado
+- Geração estável na mesma execução, diferente por papel, com caracteres
+  seguros; variável de ambiente sobrescreve a geração.
+- Bootstrap idempotente continua concluindo sem erros.
+
 ## [0.5.0] — 2026-09-17 — Menu, Feed em carrossel, nova Home e Open-Meteo
 
 ### Adicionado

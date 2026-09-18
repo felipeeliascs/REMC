@@ -38,7 +38,7 @@ FLUSH PRIVILEGES;
 ## Comandos WP-CLI (se disponível)
 
 ```bash
-wp core install --url=http://127.0.0.1:8000 --title=REMC --admin_user=admin --admin_password=senha123
+wp core install --url=http://127.0.0.1:8000 --title=REMC --admin_user=admin --admin_password="$WP_ADMIN_PASSWORD"
 wp plugin activate remc-core
 wp theme activate remc-educacional
 wp remc bootstrap

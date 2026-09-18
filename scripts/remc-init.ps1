@@ -69,8 +69,16 @@ for ($i = 0; $i -lt 60; $i++) {
 
 $siteUrl   = if ($env:WP_SITEURL) { $env:WP_SITEURL } else { "http://127.0.0.1" }
 $adminUser = if ($env:WP_ADMIN_USER) { $env:WP_ADMIN_USER } else { "admin" }
-$adminPass = if ($env:WP_ADMIN_PASSWORD) { $env:WP_ADMIN_PASSWORD } else { "admin_password_123" }
 $adminMail = if ($env:WP_ADMIN_EMAIL) { $env:WP_ADMIN_EMAIL } else { "admin@localhost" }
+
+# Senha do administrador: usa WP_ADMIN_PASSWORD ou gera uma aleatoria nesta execucao.
+$adminPassGerada = $false
+if ($env:WP_ADMIN_PASSWORD) {
+    $adminPass = $env:WP_ADMIN_PASSWORD
+} else {
+    $adminPass = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 20 | ForEach-Object { [char]$_ })
+    $adminPassGerada = $true
+}
 
 Invoke-Wp core is-installed *> $null
 if ($LASTEXITCODE -ne 0) {
@@ -119,5 +127,9 @@ Invoke-Wp remc bootstrap
 Write-Host ""
 Write-Host "==========================================" -ForegroundColor Green
 Write-Host " REMC pronta: $siteUrl" -ForegroundColor Green
-Write-Host " Admin: $adminUser / $adminPass" -ForegroundColor Green
+Write-Host " Admin: $adminUser" -ForegroundColor Green
+if ($adminPassGerada) {
+    Write-Host " Senha do admin (gerada agora, anote): $adminPass" -ForegroundColor Yellow
+    Write-Host " Para fixar, defina WP_ADMIN_PASSWORD no .env." -ForegroundColor Yellow
+}
 Write-Host "==========================================" -ForegroundColor Green

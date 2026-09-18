@@ -66,9 +66,12 @@ php -S 127.0.0.1:8000
 
 ## Acessos
 
-- **Admin:** admin_remc / admin_password_123
-- **Professor:** professor_exemplo / professor_password_123
-- **Alunos:** aluno_joao, aluno_maria, aluno_pedro / aluno_password_123
+- **Admin:** `admin_remc`
+- **Professores:** `professor_a` (Turma A), `professor_b` (Turma B)
+- **Alunos:** `aluno_joao`, `aluno_maria` (Turma A), `aluno_pedro` (Turma B)
+
+Senhas: geradas pelo bootstrap e exibidas uma única vez na execução (não
+versionadas). Veja `DESENVOLVIMENTO.md`.
 
 ## 13 Tutoriais
 

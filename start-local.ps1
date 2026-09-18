@@ -98,7 +98,7 @@ Write-Host "  3. Ative o plugin REMC Core" -ForegroundColor White
 Write-Host "  4. Ative o tema REMC Educacional" -ForegroundColor White
 Write-Host ""
 Write-Host "Comandos úteis:" -ForegroundColor Cyan
-Write-Host ("  wp core install --url=http://{0}:{1} --title=REMC --admin_user=admin --admin_password=senha123" -f $host, $port) -ForegroundColor White
+Write-Host ("  wp core install --url=http://{0}:{1} --title=REMC --admin_user=admin --admin_password=`"`$WP_ADMIN_PASSWORD`"" -f $host, $port) -ForegroundColor White
 Write-Host "  wp plugin activate remc-core" -ForegroundColor White
 Write-Host "  wp theme activate remc-educacional" -ForegroundColor White
 Write-Host "  wp remc bootstrap" -ForegroundColor White
