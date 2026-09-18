@@ -73,15 +73,12 @@ remc/
 
 ## Capturas de tela
 
-Imagens de demonstração (dados fictícios, sem informação pessoal). Os arquivos
-ficam em `docs/img/` — nomes e cuidados em `docs/img/LEIA-ME.md`.
+Demonstração com **dados fictícios**, sem informação pessoal. Nomes de arquivo e
+checklist de captura em `docs/img/LEIA-ME.md`.
 
-<!-- Depois de adicionar as imagens em docs/img/, remova os marcadores de
-comentário para exibi-las:
+![Página inicial do REMC, com o card "Tempo agora em Cachoeira Paulista"](docs/img/home.png)
 
-![Página inicial do REMC](docs/img/home.png)
-
-![Feed com carrossel de observações](docs/img/feed.png)
+![Feed com o carrossel de observações](docs/img/feed.png)
 
 ![Biblioteca de tutoriais](docs/img/tutoriais.png)
 
@@ -89,8 +86,8 @@ comentário para exibi-las:
 
 ![Painel do Professor](docs/img/painel-professor.png)
 
+<!-- Versão para celular: adicione docs/img/mobile.png e descomente a linha abaixo.
 ![Versão para celular](docs/img/mobile.png)
-
 -->
 
 ## Documentação

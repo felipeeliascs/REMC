@@ -24,6 +24,8 @@ Coloque aqui as imagens usadas no `README.md`. Use **somente dados fictícios**
 
 ## Como referenciar no README
 
-O bloco já está preparado (comentado) na seção "Capturas de tela" do
-`README.md`. Depois de adicionar os arquivos, basta remover os marcadores
-`<!--` e `-->` para as imagens aparecerem.
+As imagens já estão ativas na seção "Capturas de tela" do `README.md`
+(`home`, `feed`, `tutoriais`, `painel-aluno`, `painel-professor`).
+
+A captura `mobile.png` é opcional: adicione o arquivo e descomente a linha
+correspondente no `README.md`.

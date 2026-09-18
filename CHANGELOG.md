@@ -1,5 +1,17 @@
 # CHANGELOG.md
 
+## [0.6.2] — 2026-09-18 — Capturas de tela no README
+
+### Adicionado
+- Capturas de demonstração em `docs/img/` (`home`, `feed`, `tutoriais`,
+  `painel-aluno`, `painel-professor`) e seção "Capturas de tela" no `README.md`.
+- `docs/img/LEIA-ME.md` com nomes esperados e checklist de sanitização.
+
+### Notas
+- A captura para celular (`mobile.png`) é opcional e ficou preparada no README
+  (linha comentada).
+- As imagens usam apenas dados fictícios.
+
 ## [0.6.1] — 2026-09-18 — Licença MIT
 
 ### Adicionado
