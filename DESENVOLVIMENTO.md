@@ -14,7 +14,7 @@ Reconstrução de MVP WordPress + BuddyPress (início de 2024)
 - PHP: 8.3.x (imagem `wordpress:7.1-php8.3-apache`)
 - Banco: MariaDB 10.6.16
 
-### Reconstrução histórica (corte 31/01/2024, preservada no commit `e0019b5`)
+### Reconstrução histórica (corte 31/01/2024, preservada no commit `c72b5da`)
 
 - WordPress: 6.4.3 (30/01/2024)
 - BuddyPress: 12.2.0 (23/01/2024)
@@ -45,7 +45,7 @@ aplica pt_BR + America/Sao_Paulo e roda o bootstrap de dados ficticios.
 
 Executa pull das imagens modernas, recria o container, atualiza o BuddyPress,
 reativa componentes/plugin/tema e mostra as versoes. O estado historico
-permanece no commit `e0019b5`.
+permanece no commit `c72b5da`.
 
 ### Iniciar/parar containers
 

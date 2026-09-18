@@ -265,7 +265,7 @@
 
 ### Preservado
 - O estado histórico (WordPress 6.4.3 + BuddyPress 12.2.0) permanece no commit
-  `e0019b5` da reconstrução.
+  `c72b5da` da reconstrução.
 - MariaDB mantido em 10.6.16 (compatível com o BP 14.x, sem migração de dados).
 
 ### Verificado

@@ -120,7 +120,7 @@ Componentes desativados (fora do MVP): `activity`, `friends`, `messages`, `blogs
 
 Aplicada em **17/09/2026**, por decisão do responsável, mantendo o histórico
 anterior no primeiro commit da reconstrução. O estado histórico não foi apagado:
-ele permanece recuperável pelo commit `e0019b5`.
+ele permanece recuperável pelo commit `c72b5da`.
 
 | Componente | Antes (histórico) | Depois (moderno) | Observação |
 |------------|-------------------|------------------|------------|

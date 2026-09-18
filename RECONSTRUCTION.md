@@ -20,14 +20,14 @@ Ver `docs/cronologia.csv` para registro por etapa.
 
 O repositório tem, nesta ordem:
 
-1. `e0019b5` — Reconstrução do MVP REMC sobre **WordPress 6.4.3 + BuddyPress 12.2.0**
+1. `c72b5da` — Reconstrução do MVP REMC sobre **WordPress 6.4.3 + BuddyPress 12.2.0**
    (estado histórico de 31/01/2024, preservado).
 2. Commit de modernização (17/09/2026) — **WordPress 7.1 + BuddyPress 14.5.2 + PHP 8.3**,
    por decisão do responsável. Registrado em `docs/versoes.md`, seção
    "Modernização da stack".
 
 A modernização não reescreve a reconstrução: o commit histórico continua
-recuperável (por exemplo, com `git checkout e0019b5`).
+recuperável (por exemplo, com `git checkout c72b5da`).
 
 ## Observações
 
