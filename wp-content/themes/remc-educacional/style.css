@@ -120,12 +120,12 @@ a:hover {
 	text-decoration: none;
 }
 
-/* Grupo alinhado Ã  direita (Tutoriais | Programa EducaÃ§Ã£o) */
+/* Grupo alinhado à direita (Tutoriais | Programa Educação) */
 .nav-main .remc-menu-right {
 	margin-left: auto;
 }
 
-/* Submenu (ObservaÃ§Ãµes â–¾) */
+/* Submenu (Observações ▾) */
 .nav-main .sub-menu {
 	display: none;
 	position: absolute;
@@ -147,11 +147,11 @@ a:hover {
 }
 
 .nav-main .menu-item-has-children > a::after {
-	content: " â–¾";
+	content: " ▾";
 	font-size: 0.75em;
 }
 
-/* BotÃ£o do menu (telas pequenas) */
+/* Botão do menu (telas pequenas) */
 .menu-toggle {
 	display: none;
 	align-items: center;
@@ -267,7 +267,7 @@ th {
 	background-color: #5a6268;
 }
 
-/* Estado "compartilhado": controle clicÃ¡vel, verde, com aÃ§Ã£o explÃ­cita */
+/* Estado "compartilhado": controle clicável, verde, com ação explícita */
 .button.remc-shared {
 	background-color: var(--remc-green);
 	color: #fff;
@@ -300,7 +300,7 @@ th {
 	margin-bottom: 2rem;
 }
 
-/* PrÃ©via do feed (Painel do Aluno) */
+/* Prévia do feed (Painel do Aluno) */
 .feed-preview {
 	margin: 0.5rem 0 1rem;
 	padding: 0.75rem 1rem;
@@ -319,7 +319,7 @@ th {
 	font-weight: 600;
 }
 
-/* Painel de compartilhamento na pÃ¡gina de atividades */
+/* Painel de compartilhamento na página de atividades */
 .remc-share-panel {
 	margin: 1rem 0 1.5rem;
 	padding: 1rem;
@@ -385,7 +385,7 @@ th {
 	position: absolute;
 }
 
-/* Carrossel de observaÃ§Ãµes (Feed / Painel do Aluno) */
+/* Carrossel de observações (Feed / Painel do Aluno) */
 .remc-carousel__viewport {
 	position: relative;
 }
@@ -475,7 +475,7 @@ th {
 	margin: 0;
 }
 
-/* PÃ¡gina inicial */
+/* Página inicial */
 .home-hero {
 	padding: 2rem 0 1rem;
 }

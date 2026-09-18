@@ -21,6 +21,24 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<li><?php esc_html_e( 'Rotinas de observação de chuva, vento, temperatura e nuvens.', 'remc-educacional' ); ?></li>
 		<li><?php esc_html_e( 'Dados comparados com informações meteorológicas reais da região.', 'remc-educacional' ); ?></li>
 	</ul>
+	<p class="home-program__link">
+		<a class="button button-secondary"
+			href="https://programaeducacao.cptec.inpe.br/"
+			target="_blank"
+			rel="noopener noreferrer">
+			<?php esc_html_e( 'Visitar o site do Programa Educação', 'remc-educacional' ); ?>
+			<span class="screen-reader-text"><?php esc_html_e( '(abre em nova aba)', 'remc-educacional' ); ?></span>
+		</a>
+	</p>
+	<p class="home-program__note">
+		<?php
+		printf(
+			/* translators: %s: endereço do site do Programa Educação */
+			esc_html__( 'Saiba mais em %s', 'remc-educacional' ),
+			'<a href="https://programaeducacao.cptec.inpe.br/" target="_blank" rel="noopener noreferrer">programaeducacao.cptec.inpe.br</a>'
+		);
+		?>
+	</p>
 </section>
 
 <?php
