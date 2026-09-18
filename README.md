@@ -71,6 +71,28 @@ remc/
 - **Aluno:** Observações e atividades próprias
 - **Visitante:** Apenas tutoriais públicos
 
+## Capturas de tela
+
+Imagens de demonstração (dados fictícios, sem informação pessoal). Os arquivos
+ficam em `docs/img/` — nomes e cuidados em `docs/img/LEIA-ME.md`.
+
+<!-- Depois de adicionar as imagens em docs/img/, remova os marcadores de
+comentário para exibi-las:
+
+![Página inicial do REMC](docs/img/home.png)
+
+![Feed com carrossel de observações](docs/img/feed.png)
+
+![Biblioteca de tutoriais](docs/img/tutoriais.png)
+
+![Painel do Aluno](docs/img/painel-aluno.png)
+
+![Painel do Professor](docs/img/painel-professor.png)
+
+![Versão para celular](docs/img/mobile.png)
+
+-->
+
 ## Documentação
 
 - `README.md` - Este arquivo
