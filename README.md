@@ -107,6 +107,7 @@ O bootstrap cria: 1 escola, 2 turmas, 3 alunos, 4 observações, 13 tutoriais, 2
 - BuddyPress 12.2.0 (23/01/2024)
 - PHP 8.1.x
 - MariaDB 10.6.x
+- API open-meteo.com
 
 ## Licença
 
