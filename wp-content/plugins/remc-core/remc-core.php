@@ -4,6 +4,8 @@
  * Description: Core functionality for Rede Educacional de Monitoramento Climático
  * Author: REMC Team
  * Version: 0.1.0
+ * License: MIT
+ * License URI: https://opensource.org/licenses/MIT
  * Text Domain: remc-core
  * Domain Path: /languages
  */

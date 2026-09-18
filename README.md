@@ -91,4 +91,8 @@ O bootstrap cria: 1 escola, 2 turmas, 3 alunos, 4 observações, 13 tutoriais, 2
 
 ## Licença
 
-Uso interno educacional.
+Este projeto está licenciado sob a **MIT License** — veja o arquivo [LICENSE](LICENSE).
+
+As dependências de terceiros mantêm suas próprias licenças:
+WordPress e BuddyPress são distribuídos sob a GNU General Public License (GPL),
+e o Open-Meteo é usado via API pública (dados sob CC BY 4.0).

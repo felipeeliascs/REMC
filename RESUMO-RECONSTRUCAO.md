@@ -122,4 +122,4 @@ remc/
 
 ## Licença
 
-Uso interno educacional.
+Licença: MIT (veja o arquivo `LICENSE`).

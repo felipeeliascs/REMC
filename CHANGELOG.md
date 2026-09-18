@@ -1,5 +1,17 @@
 # CHANGELOG.md
 
+## [0.6.1] — 2026-09-18 — Licença MIT
+
+### Adicionado
+- Arquivo `LICENSE` com a licença **MIT** (Copyright 2026 felipeeliascs).
+
+### Alterado
+- Cabeçalhos do tema (`style.css`, `functions.php`) e do plugin (`remc-core.php`)
+  passaram a declarar MIT, substituindo a menção à GPL.
+- `README.md` e resumos: seção de licença atualizada, com nota de que WordPress
+  e BuddyPress mantêm suas próprias licenças (GPL) e que o Open-Meteo é usado
+  via API pública.
+
 ## [0.6.0] — 2026-09-18 — Senhas de demonstração geradas (sem credenciais fixas)
 
 ### Alterado

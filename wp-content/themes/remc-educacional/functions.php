@@ -6,8 +6,8 @@
  * Author: REMC Team
  * Description: Tema educacional para a Rede Educacional de Monitoramento Climático
  * Version: 0.1.0
- * License: GNU General Public License v2 or later
- * License URI: http://www.gnu.org/licenses/gpl-2.0.html
+ * License: MIT
+ * License URI: https://opensource.org/licenses/MIT
  * Text Domain: remc-educacional
  * Tags: education, weather, blue, green
  *

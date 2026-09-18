@@ -87,4 +87,4 @@ versionadas). Veja `DESENVOLVIMENTO.md`.
 
 ---
 
-**Uso interno educacional.**
+Licença: MIT (veja o arquivo `LICENSE`).
