@@ -26,12 +26,19 @@ if ! wp core is-installed --allow-root; then
   DB_PASSWORD="${WP_DB_PASSWORD:-remc_pass}"
   DB_HOST="${WP_DB_HOST:-remc-mariadb:3306}"
   TABLE_PREFIX="${WP_TABLE_PREFIX:-remc_}"
-  
+
+  # Senha do administrador: usa WP_ADMIN_PASSWORD ou gera uma aleatoria.
+  ADMIN_PASS_GERADA=""
+  if [ -z "${WP_ADMIN_PASSWORD}" ]; then
+    ADMIN_PASS_GERADA="$(head -c 24 /dev/urandom | base64 | tr -d '/+=' | cut -c1-20)"
+    WP_ADMIN_PASSWORD="${ADMIN_PASS_GERADA}"
+  fi
+
   wp core install \
     --url=http://127.0.0.1 \
     --title="REMC - Rede Educacional de Monitoramento Climático" \
     --admin_user="${WP_ADMIN_USER:-admin}" \
-    --admin_password="${WP_ADMIN_PASSWORD:-change_me}" \
+    --admin_password="${WP_ADMIN_PASSWORD}" \
     --admin_email="${WP_ADMIN_EMAIL:-admin@localhost}" \
     --allow-root \
     --dbhost="${DB_HOST}" \
@@ -39,8 +46,12 @@ if ! wp core is-installed --allow-root; then
     --dbpass="${DB_PASSWORD}" \
     --dbname="${DB_NAME}" \
     --table_prefix="${TABLE_PREFIX}"
-  
+
   echo "WordPress instalado."
+  if [ -n "${ADMIN_PASS_GERADA}" ]; then
+    echo "Senha do admin (gerada agora, anote): ${ADMIN_PASS_GERADA}"
+    echo "Para fixar, defina WP_ADMIN_PASSWORD no .env."
+  fi
 else
   echo "WordPress já instalado."
 fi
