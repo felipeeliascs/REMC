@@ -489,7 +489,7 @@ function remc_share_panel( $args = array() ) {
 						<h3 class="remc-slide__title"><?php echo esc_html( get_the_title( $obs ) ); ?></h3>
 						<?php if ( $data ) : ?>
 							<p class="remc-slide__when">
-								<span aria-hidden="true">ðŸ—“ï¸</span>
+								<span aria-hidden="true">🗓️</span>
 								<?php echo esc_html( sprintf( __( 'Observado em %s', 'remc-educacional' ), mysql2date( 'd/m/Y H:i', $data ) ) ); ?>
 							</p>
 						<?php endif; ?>

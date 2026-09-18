@@ -416,6 +416,23 @@ th {
 	margin-top: 0;
 }
 
+/* Título da observação no item do feed (também usado no carrossel) */
+.remc-slide__title {
+	margin: 0 0 0.5rem;
+	font-size: 1.1rem;
+	line-height: 1.3;
+}
+
+.activity-item .remc-slide__title {
+	font-weight: 700;
+	color: var(--remc-dark);
+}
+
+/* Lista de fatos com emoji no item do feed */
+.activity-item .activity-inner ul {
+	margin: 0.25rem 0 0.5rem 1.1rem;
+}
+
 .remc-slide__when {
 	color: #555;
 	margin: 0 0 0.75rem;

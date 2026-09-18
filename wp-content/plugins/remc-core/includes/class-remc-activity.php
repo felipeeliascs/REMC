@@ -60,6 +60,10 @@ class Remc_Activity {
 
 		// Limita o diretorio publico aos itens da REMC.
 		add_filter( 'bp_activity_get_where_conditions', array( $this, 'filter_public_directory' ), 10, 2 );
+
+		// Titulo da observacao exibido no item do feed (o BuddyPress remove
+		// <h3> e classes do conteudo salvo, entao injetamos na saida).
+		add_filter( 'bp_get_activity_content_body', array( $this, 'prepend_activity_title' ), 20, 2 );
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -218,9 +222,13 @@ class Remc_Activity {
 		}
 
 		$m      = get_post_meta( $obs_id );
+
+		// Lista de fatos com emoji. O título e a estilização são injetados na
+		// saída (o BuddyPress remove <h3> e atributos class ao renderizar).
 		$content  = '<p><strong>' . esc_html__( 'Dados meteorológicos observados', 'remc-core' ) . '</strong></p><ul>';
 		foreach ( $facts as $f ) {
-			$content .= '<li>' . esc_html( $f['label'] . ': ' . $f['value'] ) . '</li>';
+			$content .= '<li><span aria-hidden="true">' . esc_html( $f['icon'] ) . '</span> '
+				. esc_html( $f['label'] . ': ' . $f['value'] ) . '</li>';
 		}
 		$content .= '</ul>';
 
@@ -580,11 +588,35 @@ class Remc_Activity {
 	}
 
 	/**
+	 * Adiciona o titulo da observacao no topo do item do feed.
+	 *
+	 * Roda depois da sanitizacao do BuddyPress, preservando a classe
+	 * remc-slide__title usada tambem no carrossel.
+	 */
+	public function prepend_activity_title( $content, $activity = null ) {
+		if ( ! $activity || ! isset( $activity->component, $activity->type ) ) {
+			return $content;
+		}
+		if ( self::COMPONENT !== $activity->component || self::TYPE !== $activity->type ) {
+			return $content;
+		}
+		if ( 0 === strpos( (string) $content, '<h3 class="remc-slide__title">' ) ) {
+			return $content; // ja injetado nesta renderizacao.
+		}
+
+		$obs = get_post( (int) $activity->item_id );
+		if ( ! $obs || 'remc_observacao' !== $obs->post_type ) {
+			return $content;
+		}
+
+		return '<h3 class="remc-slide__title">' . esc_html( get_the_title( $obs ) ) . '</h3>' . $content;
+	}
+
+	/**
 	 * No diretorio publico, mostra apenas os itens compartilhados da REMC.
 	 *
 	 * $where_conditions e um mapa chave => trecho SQL, unido por AND pelo BP.
-	 */
-	public function filter_public_directory( $where_conditions, $args = array() ) {
+	 */	public function filter_public_directory( $where_conditions, $args = array() ) {
 		if ( is_user_logged_in() ) {
 			return $where_conditions; // Membros veem tambem o conteudo da turma.
 		}
