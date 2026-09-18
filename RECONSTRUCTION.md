@@ -8,9 +8,11 @@
 
 ## Ferramentas utilizadas
 
-- Docker Compose (ambiente local reproduzível)
+- Docker Compose + WSL 2 (ambiente local reproduzível)
+- WP-CLI (instalação, ativação, bootstrap de dados)
 - WordPress 6.4.3 + BuddyPress 12.2.0 (versões fixadas na reconstrução)
 - Scripts PowerShell (Windows) e shell Linux (dentro dos contêineres)
+- Git (versionamento e histórico)
 
 ## Histórico de commits
 
